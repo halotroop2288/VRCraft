@@ -1,0 +1,46 @@
+{
+	"schemaVersion": 1,
+	"name": "VRCraft",
+	"id": "vrcraft",
+	"version": "${version}",
+	"authors": [
+		"halotroop2288"
+	],
+	"description": "Fabric mods and Vivecraft friends!\nServer must be running this mod or the ViveCraft server plugin.\nActual VR support coming soon.",
+	"contact": {
+		"homepage": "https://halotroop.com/posts/vrcraft",
+		"sources": "https://github.com/halotroop2288/VRCraft",
+		"issues": "https://github.com/halotroop2288/VRCraft/issues",
+		"irc": "https://halotroop.com/discord.html",
+		"email": "carolinejoybell@gmail.com"
+	},
+	
+	"entrypoints": {
+		"main": [
+			"com.halotroop.vrcraft.common.VrCraft"
+		],
+		"client": [
+			"com.halotroop.vrcraft.client.VrCraftClient"
+		],
+		"server": [
+			"com.halotroop.vrcraft.server.VrCraftServer"
+		]
+	},
+	"mixins": [
+		"vrcraft.server.mixins.json"
+	],
+	"accessWidener": "vrcraft.aw",
+	
+	"depends": {
+		"minecraft": "1.16.3",
+		"fabricloader": ">=0.4.0",
+		"fabric": ">=0.24.3"
+	},
+	"recommends": {
+		"modmenu": "*",
+		"fabricloader": ">=0.10.6"
+	},
+	"breaks": {
+		"sodium": "*"
+	}
+}
