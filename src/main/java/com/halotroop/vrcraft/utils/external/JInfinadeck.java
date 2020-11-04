@@ -6,9 +6,11 @@ import com.sun.jna.NativeLibrary;
 import com.sun.jna.ptr.DoubleByReference;
 import com.sun.jna.ptr.FloatByReference;
 import com.sun.jna.ptr.IntByReference;
+import io.github.cottonmc.cotton.logging.ModLogger;
 
 public class JInfinadeck implements Library {
-
+	private static final ModLogger logger = new ModLogger("JInfinadeck");
+	
 	public static native int InitInternal(IntByReference inError, boolean use_local_server);
 	public static native int DeInitInternal();
 	public static native boolean CheckConnection();
@@ -59,7 +61,7 @@ public class JInfinadeck implements Library {
 			isMoving = GetTreadmillRunState();
 			yaw = yaw * 57.296f;
 		} catch (Exception e) {
-			System.out.println("Infinadeck Error: " + e.getMessage());		
+			logger.error("Infinadeck Error: " + e.getMessage());
 		}
 	}
 	

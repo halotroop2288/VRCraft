@@ -11,6 +11,7 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ArrowEntity;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -18,11 +19,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 // TODO: Check... is any decode this right?
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin {
+	@Shadow public abstract boolean damage(DamageSource source, float amount);
+	
 	private static final ServerConfig config = VrCraftServer.config;
 	
 	@Inject(method = "damage", at = @At("HEAD"))
 	protected void onDamageEntity(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
-		System.out.println("damaging entity");
+		float newAmount = amount;
 		if (source.getSource() instanceof ArrowEntity && source.getAttacker() instanceof PlayerEntity) {
 			ArrowEntity arrow = (ArrowEntity) source.getSource();
 			PlayerEntity player = (PlayerEntity) source.getAttacker();
@@ -30,14 +33,18 @@ public abstract class LivingEntityMixin {
 				VRPlayerData data = PlayerTracker.getPlayerData(player);
 				boolean headshot = Util.isHeadshot(((LivingEntity) (Object) this), arrow);
 				if (data.seated) { // Seated
-					if (headshot) amount = amount * config.seatedHeadshotMultiplier;
-					else amount *= config.seatedMultiplier;
+					if (headshot) newAmount = amount * config.seatedHeadshotMultiplier;
+					else newAmount *= config.seatedMultiplier;
 				} else { // Standing
-					if (headshot) amount *= config.standingHeadshotMultiplier;
-					else amount *= config.standingMultiplier;
+					if (headshot) newAmount *= config.standingHeadshotMultiplier;
+					else newAmount *= config.standingMultiplier;
 				}
 			}
 		}
 		VrCraft.LOGGER.devInfo("Expected damage amount: " + amount);
+		if (newAmount != amount) {
+			cir.cancel();
+			this.damage(source, newAmount);
+		}
 	}
 }

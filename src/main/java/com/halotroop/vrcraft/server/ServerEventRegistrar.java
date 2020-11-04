@@ -16,6 +16,7 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
+import net.minecraft.entity.ai.goal.CreeperIgniteGoal;
 import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.entity.mob.EndermanEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -114,7 +115,7 @@ public class ServerEventRegistrar {
 				VrCraft.LOGGER.devInfo("Projectile velocity: " + vel);
 			} else if (entity instanceof CreeperEntity) {
 				CreeperEntity creeper = (CreeperEntity) entity;
-				Util.replaceAIGoal(creeper, creeper.goalSelector, VRCreeperIgniteGoal.class,
+				Util.replaceAIGoal(creeper, creeper.goalSelector, CreeperIgniteGoal.class,
 						() -> new VRCreeperIgniteGoal(creeper));
 			} else if (entity instanceof EndermanEntity) {
 				EndermanEntity enderman = (EndermanEntity) entity;
@@ -137,7 +138,7 @@ public class ServerEventRegistrar {
 			
 			PacketDiscriminators disc = PacketDiscriminators.values()[payload[0]];
 			
-			// if (pd == null && disc != PacketDiscriminators.VERSION) is impossible
+			// (pd == null && disc != PacketDiscriminators.VERSION) is impossible
 			
 			PacketByteBuf buf = new PacketByteBuf(unfixedData.copy(1, payload.length)); // Remove the discriminator byte
 			context.getTaskQueue().execute(() -> {
@@ -184,10 +185,9 @@ public class ServerEventRegistrar {
 						LOGGER.warn("S2C packet was sent backwards!");
 						break;
 					default: // Unhandled
-						LOGGER.warn("Unhandled packet was sent to server");
+						LOGGER.warn("Unhandled packet was received on server");
 				}
 			});
-			
 		});
 	}
 	

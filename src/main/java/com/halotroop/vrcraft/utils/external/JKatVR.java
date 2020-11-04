@@ -6,8 +6,11 @@ import com.sun.jna.NativeLibrary;
 import com.sun.jna.ptr.DoubleByReference;
 import com.sun.jna.ptr.FloatByReference;
 import com.sun.jna.ptr.IntByReference;
+import io.github.cottonmc.cotton.logging.ModLogger;
 
 public class JKatVR implements Library {
+	private static final ModLogger logger = new ModLogger("JKatVR");
+	
 	public static final String KATVR_LIBRARY_NAME = "WalkerBase.dll";
 
 	public static final NativeLibrary KATVR_NATIVE_LIB = NativeLibrary.getInstance(KATVR_LIBRARY_NAME);
@@ -58,7 +61,7 @@ public class JKatVR implements Library {
 			ismoving = is.getValue();
 			yaw = yaw / 1024f * 360f;
 		} catch (Exception e) {
-			System.out.println("KATVR Error: " + e.getMessage());		
+			logger.error("KATVR Error: " + e.getMessage());
 		}
 	}
 	

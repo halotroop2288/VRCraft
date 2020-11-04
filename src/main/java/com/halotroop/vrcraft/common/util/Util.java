@@ -78,9 +78,8 @@ public final class Util {
 		if (goal != null) {
 			selector.remove(goal.getGoal());
 			selector.add(goal.getPriority(), newGoalSupplier.get());
-			VrCraft.LOGGER.debug("Replaced {} in {}", targetGoal.getSimpleName(), entity);
 		} else {
-			VrCraft.LOGGER.debug("Couldn't find {} in {}", targetGoal.getSimpleName(), entity);
+			VrCraft.LOGGER.error("Couldn't find " + targetGoal.getSimpleName() + " in " + entity);
 		}
 	}
 	
