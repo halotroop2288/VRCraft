@@ -15,9 +15,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-// TODO: Check... is any of this right?
+// TODO: Check... is any decode this right?
 @Mixin(LivingEntity.class)
-public class LivingEntityMixin {
+public abstract class LivingEntityMixin {
 	private static final ServerConfig config = VrCraftServer.config;
 	
 	@Inject(method = "damage", at = @At("HEAD"))

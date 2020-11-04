@@ -1,14 +1,18 @@
 package com.halotroop.vrcraft.server;
 
+import com.halotroop.vrcraft.common.network.packet.*;
+import com.halotroop.vrcraft.common.network.packet.ActiveHandPacket;
 import com.halotroop.vrcraft.common.VrCraft;
 import com.halotroop.vrcraft.common.entity.ai.goal.VRCreeperIgniteGoal;
 import com.halotroop.vrcraft.common.entity.ai.goal.VREndermanChasePlayerGoal;
 import com.halotroop.vrcraft.common.entity.ai.goal.VREndermanTeleportTowardsPlayerGoal;
-import com.halotroop.vrcraft.common.network.packet.UberPacket;
-import com.halotroop.vrcraft.common.util.MathUtil;
+import com.halotroop.vrcraft.server.network.packet.VRC2SPacketListener;
+import com.halotroop.vrcraft.common.util.UberPacket;
 import com.halotroop.vrcraft.common.util.PlayerTracker;
 import com.halotroop.vrcraft.common.util.Util;
 import com.halotroop.vrcraft.common.util.VRPlayerData;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
@@ -18,12 +22,14 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.entity.projectile.TridentEntity;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -32,8 +38,11 @@ import static com.halotroop.vrcraft.common.VrCraft.LOGGER;
 
 // I experimented with adding events that function exactly like the Forge equivalent,
 // but decided it's not worth the trouble. They're confusing and no one will use them anyway.
-public class ServerEventHandler {
+@Environment(EnvType.SERVER)
+public class ServerEventRegistrar {
 	public static final ServerConfig config = VrCraftServer.config;
+	
+	public static Map<UUID, VRPlayerData> vrPlayers = new HashMap<>();
 	
 	public static void init() {
 		// onServerTick
@@ -52,7 +61,6 @@ public class ServerEventHandler {
 		});
 		
 		ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
-			LOGGER.devInfo("Entity load event running for " + entity.getEntityName());
 			if (entity instanceof ServerPlayerEntity) {
 				ServerPlayerEntity player = (ServerPlayerEntity) entity;
 				if (config.vrOnly && !player.hasPermissionLevel(2)) { // VR-only not OP
@@ -86,7 +94,7 @@ public class ServerEventHandler {
 				VRPlayerData data = PlayerTracker.getAbsolutePlayerData(shooter);
 				assert data != null;
 				Vec3d pos = data.getController(data.activeHand).getPos();
-				Vec3d aim = MathUtil.multiplyQuat(new Vec3d(0, 0, -1), data.getController(data.activeHand).getRot());
+				Vec3d aim = Util.multiplyQuat(data.getController(data.activeHand).getRotation(), new Vec3d(0, 0, -1));
 				
 				if (arrow && !data.seated && data.bowDraw > 0) {
 					pos = data.getController(0).getPos();
@@ -106,18 +114,98 @@ public class ServerEventHandler {
 				VrCraft.LOGGER.devInfo("Projectile velocity: " + vel);
 			} else if (entity instanceof CreeperEntity) {
 				CreeperEntity creeper = (CreeperEntity) entity;
-				LOGGER.devInfo("Replacing creeper AI goal");
 				Util.replaceAIGoal(creeper, creeper.goalSelector, VRCreeperIgniteGoal.class,
 						() -> new VRCreeperIgniteGoal(creeper));
 			} else if (entity instanceof EndermanEntity) {
 				EndermanEntity enderman = (EndermanEntity) entity;
-				LOGGER.devInfo("Replacing enderman chase AI goal");
 				Util.replaceAIGoal(enderman, enderman.goalSelector, EndermanEntity.ChasePlayerGoal.class,
 						() -> new VREndermanChasePlayerGoal(enderman));
-				LOGGER.devInfo("Replacing enderman AI TP goal");
 				Util.replaceAIGoal(enderman, enderman.targetSelector, EndermanEntity.TeleportTowardsPlayerGoal.class,
 						() -> new VREndermanTeleportTowardsPlayerGoal(enderman, enderman::shouldAngerAt));
 			}
 		});
+		
+		// TODO: Diverge from Vivecraft and send these all as *different* packets instead decode using a discriminator byte
+		//  This is one big confusing mess.
+		ServerSidePacketRegistry.INSTANCE.register(Util.vcID("data"), (context, unfixedData) -> {
+			if (!unfixedData.hasArray() || unfixedData.array().length != 0) return;
+			byte[] payload = unfixedData.array();
+			PlayerEntity sender = context.getPlayer();
+			
+			VRPlayerData pd = vrPlayers.get(sender.getUuid());
+			VRC2SPacketListener listener = new VRC2SPacketListener(pd);
+			
+			PacketDiscriminators disc = PacketDiscriminators.values()[payload[0]];
+			
+			// if (pd == null && disc != PacketDiscriminators.VERSION) is impossible
+			
+			PacketByteBuf buf = new PacketByteBuf(unfixedData.copy(1, payload.length)); // Remove the discriminator byte
+			context.getTaskQueue().execute(() -> {
+				switch (disc) {
+					case CONTROLLERLDATA:
+						new ControllerData().applyServer(listener);
+						break;
+					case CONTROLLERRDATA:
+						new ControllerData().right().applyServer(listener);
+						break;
+					case HEADDATA:
+						new HeadData().applyServer(listener);
+						break;
+					case UBERPACKET:
+						new UberPacket().applyServer(listener);
+						break;
+					case BOWDRAW:
+						new BowDrawPacket().applyServer(listener);
+						break;
+					case CRAWL:
+						new CrawlingPacket(buf.readBoolean()).applyServer(listener);
+						break;
+					case HEIGHT:
+						new HeightPacket().applyServer(listener);
+						break;
+					case CLIMBING:
+						new ClimbingPacket().applyServer(listener);
+						break;
+					case TELEPORT:
+						new TeleportPacket().applyServer(listener);
+						break;
+					case ACTIVEHAND:
+						new ActiveHandPacket().applyServer(listener);
+						break;
+					case WORLDSCALE:
+						new WorldScalePacket().applyServer(listener);
+						break;
+					case VERSION:
+						new VersionPacket().applyServer(listener);
+						break;
+					case SETTING_OVERRIDE: // S2C
+					case MOVEMODE: // S2C
+					case REQUESTDATA: // S2C
+						LOGGER.warn("S2C packet was sent backwards!");
+						break;
+					default: // Unhandled
+						LOGGER.warn("Unhandled packet was sent to server");
+				}
+			});
+			
+		});
+	}
+	
+	public enum PacketDiscriminators {
+		VERSION, // VERSION_OH_AND_HEY_WHAT_DO_YOU_SUPPORT - Techjar
+		REQUESTDATA, // S2C Packet
+		HEADDATA, // HMD Headset
+		CONTROLLERLDATA, // Controller 0
+		CONTROLLERRDATA, // Controller 1
+		WORLDSCALE, // World Scale
+		BOWDRAW, // Bow draw
+		MOVEMODE, // S2C Packet
+		UBERPACKET, // L+R Controllers, HMD, world scale, and height
+		TELEPORT, // TP destination
+		CLIMBING, // Don't kick player for floating while climbing
+		SETTING_OVERRIDE, // S2C Packet
+		HEIGHT,
+		ACTIVEHAND,
+		CRAWL
 	}
 }

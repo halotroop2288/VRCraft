@@ -1,61 +1,93 @@
 package com.halotroop.vrcraft.common.util;
 
-import net.minecraft.util.math.Quaternion;
+import com.halotroop.vrcraft.common.network.packet.ControllerData;
+import com.halotroop.vrcraft.common.network.packet.HeadData;
+import io.netty.buffer.Unpooled;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.math.Vec3d;
 
 /**
  * An Object that represents a player's VR headset and controller data
- * @authors Techjar, halotroop2288
+ *
+ * This is a Frankenstein's monster decode the classes that control this data in Vivecraft and in VFE
+ *
+ * @author Techjar, jrbudda, halotroop2288
  */
 public class VRPlayerData {
+	private static final Vec3d FORWARD = new Vec3d(0, 0, -1);
 	public Vec3d offset = new Vec3d(0, 0, 0);
-	public ObjectInfo head = new ObjectInfo();
-	public ObjectInfo controller0 = new ObjectInfo();
-	public ObjectInfo controller1 = new ObjectInfo();
+	public HeadData head = new HeadData();
+	public ControllerData controllerL = new ControllerData();
+	public ControllerData controllerR = new ControllerData().right();
 	public boolean handsReversed;
 	public float worldScale;
 	public boolean seated;
 	public boolean freeMove;
-	public float bowDraw;
+	public float bowDraw; // bow draw
 	public float height;
 	public int activeHand;
 	public boolean crawling;
+	public boolean vr = true;
+	public PlayerEntity player;
 	
-	public ObjectInfo getController(int c) {
-		return c == 0 ? controller0 : controller1;
+	public VRPlayerData(PlayerEntity player) {
+		this.player = player;
+	}
+
+	public float getBowDraw() {
+		return bowDraw;
 	}
 	
-	/**
-	 * An Object that represents the position of a real-world object
-	 */
-	public static class ObjectInfo {
-		public double posX;
-		public double posY;
-		public double posZ;
-		public float rotW;
-		public float rotX;
-		public float rotY;
-		public float rotZ;
-		
-		public Vec3d getPos() {
-			return new Vec3d(posX, posY, posZ);
-		}
-		
-		public void setPos(Vec3d pos) {
-			posX = pos.x;
-			posY = pos.y;
-			posZ = pos.z;
-		}
-		
-		public Quaternion getRot() {
-			return new Quaternion(rotW, rotX, rotY, rotZ);
-		}
-		
-		public void setRot(Quaternion quat) {
-			rotW = quat.getW();
-			rotX = quat.getX();
-			rotY = quat.getY();
-			rotZ = quat.getZ();
-		}
+	public Vec3d getControllerVectorCustom(int controller, Vec3d direction) {
+		return Util.multiplyQuat(controller == 0 ? controllerL.getRotation() : controllerR.getRotation(), direction);
 	}
+	
+	public Vec3d getHMDDirection() {
+		return Util.multiplyQuat(head.getRotation(), FORWARD);
+	}
+	
+	public Vec3d getHMDPosition(PlayerEntity player) {
+		return head.getPos().add(player.getPos()).add(offset);
+	}
+	
+	public Vec3d getControllerPosition(int c, PlayerEntity player) {
+		if (this.seated) {
+			Vec3d dir = this.getHMDDirection();
+			dir = dir.rotateY((float) Math.toRadians(c == 0 ? -35 : 35));
+			dir = new Vec3d(dir.x, 0, dir.z).normalize();
+			Vec3d out = this.getHMDPosition(player).add(dir.x * 0.3 * worldScale,
+					-0.4 * worldScale, dir.z * 0.3 * worldScale);
+			return new Vec3d(out.x, out.y, out.z);
+		}
+
+		return player.getPos().add(0, 1.62, 0);
+	}
+	
+	public boolean isVR() {
+		return this.vr;
+	}
+	
+	public void setVR(boolean vr) {
+		this.vr = vr;
+	}
+	
+	public boolean isSeated() {
+		return seated;
+	}
+	
+	public UberPacket getUberPacket() {
+		return new UberPacket(player.getUuid(), head, controllerL, controllerR, worldScale, height);
+	}
+	
+	public byte[] getUberPacketBytes() {
+		PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+		getUberPacket().write(buf);
+		return buf.array();
+	}
+	
+	public ControllerData getController(int c) {
+		return c == 0 ? controllerL : controllerR;
+	}
+	
 }

@@ -1,5 +1,9 @@
 accessWidener   v1	named
 #
+# Entity
+accessible field net/minecraft/entity/Entity standingEyeHeight F
+mutable field net/minecraft/entity/Entity standingEyeHeight F
+#
 # CreeperIgniteGoal
 accessible field net/minecraft/entity/ai/goal/CreeperIgniteGoal creeper Lnet/minecraft/entity/mob/CreeperEntity;
 mutable field net/minecraft/entity/ai/goal/CreeperIgniteGoal creeper Lnet/minecraft/entity/mob/CreeperEntity;
@@ -40,3 +44,11 @@ accessible field net/minecraft/entity/mob/MobEntity goalSelector Lnet/minecraft/
 mutable field net/minecraft/entity/mob/MobEntity goalSelector Lnet/minecraft/entity/ai/goal/GoalSelector;
 accessible field net/minecraft/entity/mob/MobEntity targetSelector Lnet/minecraft/entity/ai/goal/GoalSelector;
 mutable field net/minecraft/entity/mob/MobEntity targetSelector Lnet/minecraft/entity/ai/goal/GoalSelector;
+#
+# ClientConnection
+accessible field net/minecraft/network/ClientConnection channel Lio/netty/channel/Channel;
+mutable field net/minecraft/network/ClientConnection channel Lio/netty/channel/Channel;
+#
+# ServerPlayNetworkHandler
+accessible field net/minecraft/server/network/ServerPlayNetworkHandler floatingTicks I
+mutable field net/minecraft/server/network/ServerPlayNetworkHandler floatingTicks I

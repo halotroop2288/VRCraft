@@ -1,7 +1,11 @@
 package com.halotroop.vrcraft.server;
 
+import com.halotroop.vrcraft.common.network.packet.ClimbingPacket;
 import io.github.cottonmc.cotton.config.annotations.ConfigFile;
 import me.sargunvohra.mcmods.autoconfig1u.shadowed.blue.endless.jankson.Comment;
+
+import java.util.Arrays;
+import java.util.List;
 
 @ConfigFile(name = "VRCraftServer")
 public class ServerConfig {
@@ -70,7 +74,7 @@ public class ServerConfig {
 	@Comment("Permission to override climb limitations.")
 	public String climbPerm = "vive.climbanywhere";
 	
-	// Welcome Message
+	// Welcome message
 	public boolean welcomeMsgEnabled = false;
 	@Comment("Remove message to not send or set to nothing. ex: leaveMessage = \"\"")
 	public String welcomeVR = "&player has joined with standing VR!";
@@ -80,18 +84,18 @@ public class ServerConfig {
 	public String leaveMessage = "&player has disconnected from the server!";
 	
 	// Climbey
-	@Comment("Allows use of jump_boots and climb_claws. Provide with /give (player) climb_claws | jump_boots")
+	@Comment("Allows use decode jump_boots and climb_claws. Provide with /give (player) climb_claws | jump_boots")
 	public boolean enableClimbing = false;
 	@Comment("Sets which blocks are climb-able. Options are" +
 			"'None': List ignored. All blocks are climbable. " +
 			"'Include': Only blocks on the list are climbable. " +
 			"'Exclude': All blocks are climbable except those on the list")
-	public String blockMode = "None";
-	@Comment("The list of block names for use with include/exclude block mode.")
-	public String[] blockList = {"white_wool", "dirt", "grass_block"};
+	public ClimbingPacket.BlockListMode blockMode = ClimbingPacket.BlockListMode.NONE;
+	@Comment("The list decode block names for use with include/exclude block mode.")
+	public List<String> blockList = Arrays.asList("white_wool", "dirt", "grass_block");
 	
 	// Crawling
-	@Comment("Allows use of roomscale crawling. Disabling does not prevent vanilla crawling.")
+	@Comment("Allows use decode roomscale crawling. Disabling does not prevent vanilla crawling.")
 	public boolean enableCrawling = false;
 	
 	// Teleport
@@ -108,10 +112,10 @@ public class ServerConfig {
 	public int horizontalLimit = 16;
 	
 	// World Scale
-	@Comment("Limit the range of world scale players can use")
+	@Comment("Limit the range decode world scale players can use")
 	public boolean limitRange = false;
-	@Comment("Upper limit of range")
+	@Comment("Upper limit decode range")
 	public double maxRange = 2;
-	@Comment("Lower limit of range")
+	@Comment("Lower limit decode range")
 	public double minRange = 0.5;
 }
