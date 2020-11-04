@@ -12,7 +12,7 @@ import net.minecraft.text.Text;
 // TODO the whole thing
 @Environment(EnvType.CLIENT)
 public class VRS2CPacketListener implements PacketListener {
-	private PlayerEntity player;
+	private final PlayerEntity player;
 	
 	public VRS2CPacketListener(PlayerEntity player) {
 		this.player = player;

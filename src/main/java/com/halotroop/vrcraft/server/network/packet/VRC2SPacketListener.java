@@ -78,7 +78,7 @@ public class VRC2SPacketListener implements PacketListener {
 		PlayerTracker.nonVRPlayers.add(this.player.getUuid());
 		if (CONFIG.welcomeMsgEnabled)
 			Objects.requireNonNull(this.player.getServer()).getPlayerManager().broadcastChatMessage(
-					new LiteralText(String.format(CONFIG.welcomeNonVR, playerData.player.getDisplayName())),
+					new LiteralText(String.format(CONFIG.welcomeNonVR, playerData.player.getDisplayName().asString())),
 					MessageType.SYSTEM, Util.NIL_UUID);
 	}
 	
@@ -109,7 +109,7 @@ public class VRC2SPacketListener implements PacketListener {
 		PlayerTracker.players.put(Objects.requireNonNull(player).getGameProfile().getId(), new VRPlayerData(player));
 		if (CONFIG.welcomeMsgEnabled && !CONFIG.welcomeVR.isEmpty()) {
 			Objects.requireNonNull(player.getServer()).getPlayerManager().broadcastChatMessage(
-					new LiteralText(String.format(CONFIG.welcomeVR, player.getDisplayName())),
+					new LiteralText(String.format(CONFIG.welcomeVR, player.getDisplayName().asString())),
 					MessageType.SYSTEM, Util.NIL_UUID);
 		}
 	}

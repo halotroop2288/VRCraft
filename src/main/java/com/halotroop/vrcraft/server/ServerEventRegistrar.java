@@ -1,16 +1,15 @@
 package com.halotroop.vrcraft.server;
 
-import com.halotroop.vrcraft.common.network.packet.*;
-import com.halotroop.vrcraft.common.network.packet.ActiveHandPacket;
 import com.halotroop.vrcraft.common.VrCraft;
 import com.halotroop.vrcraft.common.entity.ai.goal.VRCreeperIgniteGoal;
 import com.halotroop.vrcraft.common.entity.ai.goal.VREndermanChasePlayerGoal;
 import com.halotroop.vrcraft.common.entity.ai.goal.VREndermanTeleportTowardsPlayerGoal;
-import com.halotroop.vrcraft.server.network.packet.VRC2SPacketListener;
-import com.halotroop.vrcraft.common.util.UberPacket;
+import com.halotroop.vrcraft.common.network.packet.*;
 import com.halotroop.vrcraft.common.util.PlayerTracker;
+import com.halotroop.vrcraft.common.util.UberPacket;
 import com.halotroop.vrcraft.common.util.Util;
 import com.halotroop.vrcraft.common.util.VRPlayerData;
+import com.halotroop.vrcraft.server.network.packet.VRC2SPacketListener;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
@@ -30,6 +29,7 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -129,19 +129,24 @@ public class ServerEventRegistrar {
 		// TODO: Diverge from Vivecraft and send these all as *different* packets instead of using a discriminator byte
 		//  This is one big confusing mess.
 		ServerSidePacketRegistry.INSTANCE.register(Util.vcID("data"), (context, unfixedData) -> {
-			if (!unfixedData.hasArray() || unfixedData.array().length != 0) return;
-			byte[] payload = unfixedData.array();
-			PlayerEntity sender = context.getPlayer();
+			LOGGER.devInfo("Received a Vivecraft packet!");
+			LOGGER.devInfo("Packet has data: " + unfixedData.hasArray());
+			if (!unfixedData.hasArray() || unfixedData.array().length == 0) return;
+			LOGGER.devInfo("Packet data: " + Arrays.toString(unfixedData.array()));
 			
-			VRPlayerData pd = vrPlayers.get(sender.getUuid());
+			VRPlayerData pd = vrPlayers.get(context.getPlayer().getUuid());
 			VRC2SPacketListener listener = new VRC2SPacketListener(pd);
 			
-			PacketDiscriminators disc = PacketDiscriminators.values()[payload[0]];
+			PacketDiscriminators disc = PacketDiscriminators.values()[unfixedData.array()[0]];
+			
+			LOGGER.devInfo("It's a " + disc.name() + " packet.");
+			LOGGER.devInfo("If all goes well, another line should be printed about this packet now...");
 			
 			// (pd == null && disc != PacketDiscriminators.VERSION) is impossible
 			
-			PacketByteBuf buf = new PacketByteBuf(unfixedData.copy(1, payload.length)); // Remove the discriminator byte
+			PacketByteBuf buf = new PacketByteBuf(unfixedData.copy(1, unfixedData.array().length)); // Remove the discriminator byte
 			context.getTaskQueue().execute(() -> {
+				LOGGER.devInfo("what thread is this?");
 				switch (disc) {
 					case CONTROLLERLDATA:
 						new ControllerData().applyServer(listener);

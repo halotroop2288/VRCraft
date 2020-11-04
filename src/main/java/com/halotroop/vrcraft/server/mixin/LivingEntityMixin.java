@@ -41,10 +41,10 @@ public abstract class LivingEntityMixin {
 				}
 			}
 		}
-		VrCraft.LOGGER.devInfo("Expected damage amount: " + amount);
 		if (newAmount != amount) {
+			VrCraft.LOGGER.devInfo("Expected damage amount: " + amount);
+			cir.setReturnValue(this.damage(source, newAmount));
 			cir.cancel();
-			this.damage(source, newAmount);
 		}
 	}
 }

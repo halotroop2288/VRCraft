@@ -24,28 +24,27 @@ public abstract class PlayerEntityMixin {
 	private static final ServerConfig config = VrCraftServer.config;
 	
 	@Inject(method = "attack", at = @At("INVOKE"))
-	protected void onReleaseBow(Entity target, CallbackInfo ci) {
-		VrCraft.LOGGER.devInfo("A player released a bow.");
-		PlayerEntity player = (PlayerEntity)(Object)this;
+	protected void onAttackPlayer(Entity target, CallbackInfo ci) {
+		PlayerEntity player = (PlayerEntity) (Object) this;
 		if (target instanceof PlayerEntity) {
-			VrCraft.LOGGER.devInfo(player + " attacked " + target);
-			PlayerEntity tgt1 = (PlayerEntity) target;
+			PlayerEntity victim = (PlayerEntity) target;
 			if (PlayerTracker.hasPlayerData(player)) {
+				VrCraft.LOGGER.devInfo("VR player " + player.getDisplayName() + " attacked player " + target.getDisplayName());
 				VRPlayerData vrPlayerData = PlayerTracker.getPlayerData(player);
 				if (vrPlayerData.seated) { // Seated VR vs...
-					if (PlayerTracker.hasPlayerData(tgt1) && !config.pvpSeatedVRvsSeatedVR)
-						ci.cancel(); //Seated VR
-					else if (!config.pvpVRvsSeatedVR) ci.cancel();// VR
+					if (PlayerTracker.hasPlayerData(victim) && !config.pvpSeatedVRvsSeatedVR)
+						ci.cancel(); // Seated VR
+					else if (!config.pvpVRvsSeatedVR) ci.cancel(); // VR
 				} else { // VR vs...
-					if (!PlayerTracker.hasPlayerData(tgt1)) {
-						if (vrPlayerData.seated && !config.pvpVRvsSeatedVR) ci.cancel();// Seated VR
+					if (!PlayerTracker.hasPlayerData(victim)) {
+						if (vrPlayerData.seated && !config.pvpVRvsSeatedVR) ci.cancel(); // Seated VR
 						else if (!config.pvpVRvsVR) ci.cancel(); // VR
-					} else if (!config.pvpVRvsNonVR) ci.cancel();// Non-VR
+					} else if (!config.pvpVRvsNonVR) ci.cancel(); // Non-VR
 				}
 			} else { // Non-VR vs...
-				if (PlayerTracker.hasPlayerData(tgt1)) {
+				if (PlayerTracker.hasPlayerData(victim)) {
 					VRPlayerData vrPlayerData = PlayerTracker.getPlayerData(player);
-					if (vrPlayerData.seated) {//Seated
+					if (vrPlayerData.seated) { // Seated
 						if (!config.pvpSeatedVRvsNonVR) ci.cancel();
 					} else { // ...VR
 						if (!config.pvpVRvsNonVR) ci.cancel();
@@ -55,11 +54,10 @@ public abstract class PlayerEntityMixin {
 		}
 	}
 	
-	@Inject(method = "dropItem(Lnet/minecraft/item/ItemStack;Z)Lnet/minecraft/entity/ItemEntity;", at = @At("RETURN"))
-	protected void onPlayerTossEvent(ItemStack stack, boolean retainOwnership,
+	@Inject(method = "dropItem(Lnet/minecraft/item/ItemStack;ZZ)Lnet/minecraft/entity/ItemEntity;", at = @At("RETURN"))
+	protected void onPlayerTossEvent(ItemStack stack, boolean throwRandomly, boolean retainOwnership,
 	                                 CallbackInfoReturnable<@Nullable ItemEntity> cir) {
-		PlayerEntity player = (PlayerEntity)(Object)this;
-		VrCraft.LOGGER.devInfo(player + " tossed an item ");
+		PlayerEntity player = (PlayerEntity) (Object) this;
 		if (!PlayerTracker.hasPlayerData(player))
 			return;
 		
@@ -78,12 +76,6 @@ public abstract class PlayerEntityMixin {
 			item.setVelocity(aim.multiply(vel));
 			VrCraft.LOGGER.devInfo("Adjusted item position");
 		}
-	}
-	
-	@Inject(method = "dropItem(Lnet/minecraft/item/ItemStack;ZZ)Lnet/minecraft/entity/ItemEntity;", at = @At("RETURN"))
-	protected void onPlayerTossEvent(ItemStack stack, boolean throwRandomly, boolean retainOwnership,
-	                                 CallbackInfoReturnable<@Nullable ItemEntity> cir) {
-		onPlayerTossEvent(stack, retainOwnership, cir);
 	}
 	
 	@Inject(method = "tick", at = @At("TAIL"))
