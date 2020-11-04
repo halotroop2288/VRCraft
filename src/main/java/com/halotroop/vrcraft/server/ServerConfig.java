@@ -19,7 +19,8 @@ public class ServerConfig {
 	public boolean exceptOP = true;
 	@Comment("The message to show kicked non-vive players.")
 	public String vrOnlyKickMessage = "This server is configured for VR players only.";
-	@Comment("Ticks to wait before kicking a player. The player's client must send a Vivecraft VERSION info in that time.")
+	@Comment("Ticks to wait before kicking a player. The player's client must send Vivecraft/VRCraft Version info in" +
+			" that time.")
 	public int vrOnlyKickDelay = 200;
 	@Comment("Set to false to disable registering Vivecraft's crafting recipes.")
 	public boolean viveCrafting = true;
@@ -118,4 +119,14 @@ public class ServerConfig {
 	public double maxRange = 2;
 	@Comment("Lower limit of range")
 	public double minRange = 0.5;
+	
+	@Comment("Whether to allow Vivecraft clients to connect to the server")
+	public boolean allowVivecraft = true;
+	@Comment("Message to show players who are disconnected for using Vivecraft")
+	public String vivecraftDisconnectMessage = "This server does not allow Vivecraft users.";
+	
+	@Comment("Whether to allow Vivecraft players to connect to the server")
+	public boolean allowVRCraft = true;
+	@Comment("Message to show players who are disconnected for using VRcraft client")
+	public String vrCraftDisconnectMessage = "This server does not allow VRCraft users.";
 }

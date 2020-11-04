@@ -16,11 +16,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(BowItem.class)
 public abstract class BowItemMixin {
-	@Shadow public abstract void onStoppedUsing(ItemStack stack, World world, LivingEntity user, int remainingUseTicks);
+	@Shadow
+	public abstract void onStoppedUsing(ItemStack stack, World world, LivingEntity user, int remainingUseTicks);
 	
-	@Inject(method = "onStoppedUsing", at = @At("HEAD"))
+	@Inject(method = "onStoppedUsing", at = @At("INVOKE"))
 	protected void onArrowLoose(ItemStack stack, World world, LivingEntity user, int remainingUseTicks, CallbackInfo ci) {
-		VrCraft.LOGGER.devInfo(user + " released bow.");
+		VrCraft.LOGGER.devInfo(user.getDisplayName().asString() + " released bow.");
 		int i = stack.getMaxUseTime() - remainingUseTicks;
 		if (user instanceof PlayerEntity) {
 			VRPlayerData data = PlayerTracker.getPlayerData((PlayerEntity) user);

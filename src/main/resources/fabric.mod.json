@@ -6,7 +6,7 @@
 	"authors": [
 		"halotroop2288"
 	],
-	"description": "Fabric mods and Vivecraft friends!\nServer must be running this mod or the ViveCraft server plugin.\nActual VR support coming soon.",
+	"description": "Fabric mods and Vivecraft friends!\nServer must be running this mod or the ViveCraft server plugin.\nActual VR support coming soon (or never. Who know?!).",
 	"contact": {
 		"homepage": "https://halotroop.com/posts/vrcraft",
 		"sources": "https://github.com/halotroop2288/VRCraft",
@@ -14,7 +14,6 @@
 		"irc": "https://halotroop.com/discord.html",
 		"email": "carolinejoybell@gmail.com"
 	},
-	
 	"entrypoints": {
 		"main": [
 			"com.halotroop.vrcraft.common.VrCraft"

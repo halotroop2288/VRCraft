@@ -13,7 +13,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class PlayerManagerMixin {
 	@Inject(method = "onPlayerConnect", at = @At("TAIL"))
 	protected void onPlayerLoggedInEvent(ClientConnection connection, ServerPlayerEntity player, CallbackInfo ci) {
-		connection.channel.pipeline().addBefore(
-				"packet_handler","vr_aim_fix", new AimFixHandler(connection));
+		connection.channel.pipeline().addBefore("packet_handler", "vr_aim_fix", new AimFixHandler(connection));
 	}
 }

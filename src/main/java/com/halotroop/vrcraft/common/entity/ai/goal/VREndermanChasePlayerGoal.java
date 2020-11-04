@@ -1,5 +1,6 @@
 package com.halotroop.vrcraft.common.entity.ai.goal;
 
+import com.halotroop.vrcraft.common.VrCraft;
 import com.halotroop.vrcraft.common.util.PlayerTracker;
 import com.halotroop.vrcraft.common.util.Util;
 import com.halotroop.vrcraft.common.util.VRPlayerData;
@@ -31,12 +32,13 @@ public class VREndermanChasePlayerGoal extends EndermanEntity.ChasePlayerGoal {
 	@Override
 	public void tick() {
 		LivingEntity target = this.enderman.getTarget();
-		if (target instanceof PlayerEntity && PlayerTracker.hasPlayerData((PlayerEntity)target)) {
-			VRPlayerData data = PlayerTracker.getAbsolutePlayerData((PlayerEntity)target);
-			assert data != null;
-			this.enderman.getLookControl().lookAt(data.head.posX, data.head.posY, data.head.posZ);
-		} else {
-			super.tick();
-		}
+		if (target instanceof PlayerEntity && PlayerTracker.hasPlayerData((PlayerEntity) target)) {
+			VRPlayerData data = PlayerTracker.getAbsolutePlayerData((PlayerEntity) target);
+			if (data != null) this.enderman.getLookControl().lookAt(data.head.posX, data.head.posY, data.head.posZ);
+			else {
+				VrCraft.LOGGER.error("Failed data check in " + this.getClass().getSimpleName());
+				super.tick();
+			}
+		} else super.tick();
 	}
 }

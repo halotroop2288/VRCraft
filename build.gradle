@@ -62,7 +62,7 @@ dependencies {
 	modImplementation "io.github.prospector:modmenu:+"
 
 	modImplementation "me.shedaniel:RoughlyEnoughItems:+"
-	modRuntime "com.github.halotroop2288:databreaker:0de789a" // Forked from SuperCoder7979
+	modRuntime "com.github.SuperCoder7979:databreaker:715b589"
 
 	// Rendering
 	modRuntime "com.github.jellysquid3:lithium-fabric:mc1.16.3-0.5.6"

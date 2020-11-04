@@ -1,4 +1,4 @@
-package com.halotroop.vrcraft.utils.external;
+package com.halotroop.vrcraft.client.util.external.external;
 
 import com.sun.jna.Library;
 import com.sun.jna.Native;
@@ -54,7 +54,7 @@ public class JInfinadeck implements Library {
 	
 	public static void query(){
 		try {
-			if (CheckConnection()) {}
+			CheckConnection();
 			yaw = (float) GetFloorSpeedAngle();
 			power = GetFloorSpeedMagnitude();
 			direction = 1;

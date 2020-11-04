@@ -106,8 +106,7 @@ public class AimFixHandler extends ChannelInboundHandlerAdapter {
 			player.standingEyeHeight = oldEyeHeight;
 			
 			// Reset offset
-			if (data != null)
-				data.offset = new Vec3d(0, 0, 0);
+			if (data != null) data.offset = new Vec3d(0, 0, 0);
 		});
 	}
 }

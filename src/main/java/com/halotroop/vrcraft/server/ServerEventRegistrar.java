@@ -9,6 +9,7 @@ import com.halotroop.vrcraft.common.util.PlayerTracker;
 import com.halotroop.vrcraft.common.util.UberPacket;
 import com.halotroop.vrcraft.common.util.Util;
 import com.halotroop.vrcraft.common.util.VRPlayerData;
+import com.halotroop.vrcraft.server.network.C2SPacket;
 import com.halotroop.vrcraft.server.network.packet.VRC2SPacketListener;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -22,15 +23,12 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.entity.projectile.TridentEntity;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -42,8 +40,6 @@ import static com.halotroop.vrcraft.common.VrCraft.LOGGER;
 @Environment(EnvType.SERVER)
 public class ServerEventRegistrar {
 	public static final ServerConfig config = VrCraftServer.config;
-	
-	public static Map<UUID, VRPlayerData> vrPlayers = new HashMap<>();
 	
 	public static void init() {
 		// onServerTick
@@ -72,7 +68,7 @@ public class ServerEventRegistrar {
 								player.sendMessage(new LiteralText(config.vrOnlyKickMessage), false);
 								player.sendMessage(new LiteralText("If this is not a VR client, " +
 										"you will be kicked in " + config.vrOnlyKickDelay
-										+ " seconds"), false);
+										+ " second(s)"), false);
 								Util.scheduler.schedule(() -> {
 									world.getServer().submit(() -> {
 										if (player.networkHandler.getConnection().isOpen()
@@ -128,25 +124,28 @@ public class ServerEventRegistrar {
 		
 		// TODO: Diverge from Vivecraft and send these all as *different* packets instead of using a discriminator byte
 		//  This is one big confusing mess.
-		ServerSidePacketRegistry.INSTANCE.register(Util.vcID("data"), (context, unfixedData) -> {
-			LOGGER.devInfo("Received a Vivecraft packet!");
-			LOGGER.devInfo("Packet has data: " + unfixedData.hasArray());
-			if (!unfixedData.hasArray() || unfixedData.array().length == 0) return;
-			LOGGER.devInfo("Packet data: " + Arrays.toString(unfixedData.array()));
+		ServerSidePacketRegistry.INSTANCE.register(Util.vcID("data"), (context, data) -> {
+			if (!data.isReadable() || context.getPlayer() == null) return;
+			else LOGGER.devInfo("Received a valid Vivecraft packet!");
 			
-			VRPlayerData pd = vrPlayers.get(context.getPlayer().getUuid());
-			VRC2SPacketListener listener = new VRC2SPacketListener(pd);
-			
-			PacketDiscriminators disc = PacketDiscriminators.values()[unfixedData.array()[0]];
+			PacketDiscriminators disc = PacketDiscriminators.values()[data.readByte()];
 			
 			LOGGER.devInfo("It's a " + disc.name() + " packet.");
 			LOGGER.devInfo("If all goes well, another line should be printed about this packet now...");
 			
-			// (pd == null && disc != PacketDiscriminators.VERSION) is impossible
+			ServerPlayerEntity player = (ServerPlayerEntity) context.getPlayer(); // need access to player's server, aka this server instance
+			VRC2SPacketListener listener = new VRC2SPacketListener(player);
 			
-			PacketByteBuf buf = new PacketByteBuf(unfixedData.copy(1, unfixedData.array().length)); // Remove the discriminator byte
+			VRPlayerData pd = PlayerTracker.players.get(context.getPlayer().getUuid());
+			if (pd == null && disc != PacketDiscriminators.VERSION) return;
+			
+			if (!ServerSidePacketRegistry.INSTANCE.canPlayerReceive(player, C2SPacket.VIVECRAFT_CHANNEL_ID)) {
+				LOGGER.warn(player.getDisplayName().asString() + "cannot receive vivecraft data packets.");
+				LOGGER.warn("Trying to send one anyway.");
+			}
+			
+			// Do this on the Server thread
 			context.getTaskQueue().execute(() -> {
-				LOGGER.devInfo("what thread is this?");
 				switch (disc) {
 					case CONTROLLERLDATA:
 						new ControllerData().applyServer(listener);
@@ -164,7 +163,7 @@ public class ServerEventRegistrar {
 						new BowDrawPacket().applyServer(listener);
 						break;
 					case CRAWL:
-						new CrawlingPacket(buf.readBoolean()).applyServer(listener);
+						new CrawlingPacket(data.readBoolean()).applyServer(listener);
 						break;
 					case HEIGHT:
 						new HeightPacket().applyServer(listener);
