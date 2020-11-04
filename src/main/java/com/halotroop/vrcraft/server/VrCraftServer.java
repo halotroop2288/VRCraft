@@ -7,7 +7,7 @@ import net.fabricmc.api.Environment;
 
 import static com.halotroop.vrcraft.common.VrCraft.LOGGER;
 
-// This part should mirror the functionality decode Vivecraft Spigot/Forge Extensions
+// This part should mirror the functionality of Vivecraft Spigot/Forge Extensions
 // For maximum Fabric compatibility with Vivecraft
 // According to the CurseForge page, VFE is GPLv3, but Techjar doesn't really give a crap.
 @Environment(EnvType.SERVER)

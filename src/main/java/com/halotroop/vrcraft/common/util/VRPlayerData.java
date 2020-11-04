@@ -10,7 +10,7 @@ import net.minecraft.util.math.Vec3d;
 /**
  * An Object that represents a player's VR headset and controller data
  *
- * This is a Frankenstein's monster decode the classes that control this data in Vivecraft and in VFE
+ * This is a Frankenstein's monster of the classes that control this data in Vivecraft and in VFE
  *
  * @author Techjar, jrbudda, halotroop2288
  */

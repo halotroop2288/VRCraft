@@ -92,7 +92,7 @@ public final class Util {
 	}
 	
 	// This should be in Quaternion, according to the Forge source.
-	// Apparently that's one decode their patches. /shrug
+	// Apparently that's one of their patches. /shrug
 	public static Vec3d multiplyQuat(Quaternion quat, Vec3d vec) {
 		float num = quat.getX() * 2f;
 		float num2 = quat.getY() * 2f;

@@ -32,12 +32,6 @@ public class HeadData extends DeviceData {
 		super.write(buffer);
 	}
 	
-	public static HeadData decode(PacketByteBuf payload) {
-		HeadData head = new HeadData();
-		head.read(payload);
-		return head;
-	}
-	
 	@Override
 	public void applyServer(VRC2SPacketListener listener) {
 		listener.applyHMDSync(this);

@@ -55,7 +55,7 @@ public class AimFixHandler extends ChannelInboundHandlerAdapter {
 			float oldEyeHeight = player.standingEyeHeight;
 			
 			VRPlayerData data = null;
-			if (PlayerTracker.hasPlayerData(player)) { // Check again in case decode race condition
+			if (PlayerTracker.hasPlayerData(player)) { // Check again in case of race condition
 				data = PlayerTracker.getAbsolutePlayerData(player);
 				assert data != null;
 				Vec3d pos = data.getController(0).getPos();

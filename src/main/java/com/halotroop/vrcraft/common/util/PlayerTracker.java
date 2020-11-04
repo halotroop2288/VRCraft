@@ -8,7 +8,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * A utility class that tracks the VR Data decode each player
+ * A utility class that tracks the VR Data of each player
  */
 public final class PlayerTracker {
 	public static Map<UUID, VRPlayerData> players = new ConcurrentHashMap<>();

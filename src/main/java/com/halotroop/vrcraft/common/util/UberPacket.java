@@ -12,7 +12,7 @@ import java.util.UUID;
 import static com.halotroop.vrcraft.common.VrCraft.LOGGER;
 
 /**
- * A packet containing the data decode a player's device locations
+ * A packet containing the data of a player's device locations
  */
 public class UberPacket implements BiPacket {
 	public UUID uuid;

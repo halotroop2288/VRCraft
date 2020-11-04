@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-// TODO: Check... is any decode this right?
+// TODO: Check... is any of this right?
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin {
 	@Shadow public abstract boolean damage(DamageSource source, float amount);

@@ -8,7 +8,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
-// This part should function identically to the Non-VR version decode Vivecraft upon first release.
+// This part should function identically to the Non-VR version of Vivecraft upon first release.
 // Later, this should get full support for SteamVR.
 @Environment(EnvType.CLIENT)
 public class VrCraftClient implements ClientModInitializer {

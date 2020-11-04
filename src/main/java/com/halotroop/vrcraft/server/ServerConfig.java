@@ -84,18 +84,18 @@ public class ServerConfig {
 	public String leaveMessage = "&player has disconnected from the server!";
 	
 	// Climbey
-	@Comment("Allows use decode jump_boots and climb_claws. Provide with /give (player) climb_claws | jump_boots")
+	@Comment("Allows use of jump_boots and climb_claws. Provide with /give (player) climb_claws | jump_boots")
 	public boolean enableClimbing = false;
 	@Comment("Sets which blocks are climb-able. Options are" +
 			"'None': List ignored. All blocks are climbable. " +
 			"'Include': Only blocks on the list are climbable. " +
 			"'Exclude': All blocks are climbable except those on the list")
 	public ClimbingPacket.BlockListMode blockMode = ClimbingPacket.BlockListMode.NONE;
-	@Comment("The list decode block names for use with include/exclude block mode.")
+	@Comment("The list of block names for use with include/exclude block mode.")
 	public List<String> blockList = Arrays.asList("white_wool", "dirt", "grass_block");
 	
 	// Crawling
-	@Comment("Allows use decode roomscale crawling. Disabling does not prevent vanilla crawling.")
+	@Comment("Allows use of roomscale crawling. Disabling does not prevent vanilla crawling.")
 	public boolean enableCrawling = false;
 	
 	// Teleport
@@ -112,10 +112,10 @@ public class ServerConfig {
 	public int horizontalLimit = 16;
 	
 	// World Scale
-	@Comment("Limit the range decode world scale players can use")
+	@Comment("Limit the range of world scale players can use")
 	public boolean limitRange = false;
-	@Comment("Upper limit decode range")
+	@Comment("Upper limit of range")
 	public double maxRange = 2;
-	@Comment("Lower limit decode range")
+	@Comment("Lower limit of range")
 	public double minRange = 0.5;
 }

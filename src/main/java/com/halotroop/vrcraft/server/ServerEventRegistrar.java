@@ -126,7 +126,7 @@ public class ServerEventRegistrar {
 			}
 		});
 		
-		// TODO: Diverge from Vivecraft and send these all as *different* packets instead decode using a discriminator byte
+		// TODO: Diverge from Vivecraft and send these all as *different* packets instead of using a discriminator byte
 		//  This is one big confusing mess.
 		ServerSidePacketRegistry.INSTANCE.register(Util.vcID("data"), (context, unfixedData) -> {
 			if (!unfixedData.hasArray() || unfixedData.array().length != 0) return;
