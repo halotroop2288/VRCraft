@@ -1,38 +1,30 @@
 package com.halotroop.vrcraft.client.network.packet;
 
-import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SettingOverridePacket implements S2CPacket {
-	public Map<String, Object> settings = new HashMap<>();
-	
-	public SettingOverridePacket() {}
+public class SettingOverridePacket {
+	public HashMap<String, Object> settings;
 	
 	public SettingOverridePacket(HashMap<String, Object> settings) {
 		this.settings = settings;
 	}
 	
-	@Override
-	public void read(PacketByteBuf buf) {
-		while (buf.readableBytes() > 0) {
-			settings.put(buf.readString(32767), buf.readString(32767));
-		}
-	}
-	
-	@Override
-	public void write(PacketByteBuf buf) {
+	public PacketByteBuf encode(final PacketByteBuf buffer) {
 		for (Map.Entry<String, Object> entry : settings.entrySet()) {
-			buf.writeString(entry.getKey());
-			buf.writeString(entry.getValue().toString());
+			buffer.writeString(entry.getKey());
+			buffer.writeString(entry.getValue().toString());
 		}
+		return buffer;
 	}
 	
-	@Override
-	public void applyClient(VRS2CPacketListener listener) {
-		// TODO
+	public static SettingOverridePacket decode(final PacketByteBuf buffer) {
+		HashMap<String, Object> settings = new HashMap<>();
+		while (buffer.isReadable()) {
+			settings.put(buffer.readString(32767), buffer.readString(32767));
+		}
+		return new SettingOverridePacket(settings);
 	}
 }

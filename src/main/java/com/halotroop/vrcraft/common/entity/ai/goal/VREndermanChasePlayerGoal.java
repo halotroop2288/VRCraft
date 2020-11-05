@@ -34,7 +34,7 @@ public class VREndermanChasePlayerGoal extends EndermanEntity.ChasePlayerGoal {
 		LivingEntity target = this.enderman.getTarget();
 		if (target instanceof PlayerEntity && PlayerTracker.hasPlayerData((PlayerEntity) target)) {
 			VRPlayerData data = PlayerTracker.getAbsolutePlayerData((PlayerEntity) target);
-			if (data != null) this.enderman.getLookControl().lookAt(data.head.posX, data.head.posY, data.head.posZ);
+			if (data != null) this.enderman.getLookControl().lookAt(data.head.x, data.head.y, data.head.z);
 			else {
 				VrCraft.LOGGER.error("Failed data check in " + this.getClass().getSimpleName());
 				super.tick();

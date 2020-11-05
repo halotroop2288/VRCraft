@@ -9,14 +9,20 @@ import com.sun.jna.ptr.IntByReference;
 import io.github.cottonmc.cotton.logging.ModLogger;
 
 public class JInfinadeck implements Library {
-	private static final ModLogger logger = new ModLogger("JInfinadeck");
+	private static final ModLogger LOGGER = new ModLogger("JInfinadeck");
 	
 	public static native int InitInternal(IntByReference inError, boolean use_local_server);
+	
 	public static native int DeInitInternal();
+	
 	public static native boolean CheckConnection();
+	
 	public static native boolean GetTreadmillRunState();
+	
 	public static native double GetFloorSpeedAngle();
+	
 	public static native double GetFloorSpeedMagnitude();
+	
 	public static final String INFINADECK_LIBRARY_NAME = "InfinadeckAPI.dll";
 	public static final NativeLibrary INFINADECK_NATIVE_LIB = NativeLibrary.getInstance(INFINADECK_LIBRARY_NAME);
 	
@@ -61,7 +67,7 @@ public class JInfinadeck implements Library {
 			isMoving = GetTreadmillRunState();
 			yaw = yaw * 57.296f;
 		} catch (Exception e) {
-			logger.error("Infinadeck Error: " + e.getMessage());
+			LOGGER.error("Infinadeck Error: " + e.getMessage());
 		}
 	}
 	

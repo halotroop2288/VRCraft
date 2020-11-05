@@ -4,58 +4,38 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
 
-public abstract class DeviceData implements BiPacket {
-	public double posX;
-	public double posY;
-	public double posZ;
+public final class DeviceData {
+	public boolean b1;
+	public float x;
+	public float y;
+	public float z;
 	public float rotX;
 	public float rotY;
 	public float rotZ;
 	public float rotW;
 	
-	DeviceData() {
+	public DeviceData() {
 	}
 	
-	public DeviceData(double x, double y, double z, float rotW, float rotX, float rotY, float rotZ) {
-		this.posX = x;
-		this.posY = y;
-		this.posZ = z;
+	public DeviceData(boolean b1, float x, float y, float z, float rotW, float rotX, float rotY, float rotZ) {
+		this.b1 = b1;
+		this.x = x;
+		this.y = y;
+		this.z = z;
 		this.rotW = rotW;
 		this.rotX = rotX;
 		this.rotY = rotY;
 		this.rotZ = rotZ;
 	}
 	
-	@Override
-	public void read(PacketByteBuf buffer) {
-		buffer.writeDouble(posX);
-		buffer.writeDouble(posY);
-		buffer.writeDouble(posZ);
-		buffer.writeFloat(rotW);
-		buffer.writeFloat(rotX);
-		buffer.writeFloat(rotY);
-		buffer.writeFloat(rotZ);
-	}
-	
-	@Override
-	public void write(PacketByteBuf buffer) {
-		posX = buffer.readDouble();
-		posY = buffer.readDouble();
-		posZ = buffer.readDouble();
-		rotW = buffer.readFloat();
-		rotX = buffer.readFloat();
-		rotY = buffer.readFloat();
-		rotZ = buffer.readFloat();
-	}
-	
 	public Vec3d getPos() {
-		return new Vec3d(posX, posY, posZ);
+		return new Vec3d(x, y, z);
 	}
 	
 	public void setPos(Vec3d pos) {
-		posX = pos.x;
-		posY = pos.y;
-		posZ = pos.z;
+		x = (float) pos.x;
+		y = (float) pos.y;
+		z = (float) pos.z;
 	}
 	
 	public Quaternion getRotation() {
@@ -67,5 +47,22 @@ public abstract class DeviceData implements BiPacket {
 		rotY = quat.getY();
 		rotZ = quat.getZ();
 		rotW = quat.getW();
+	}
+	
+	public PacketByteBuf encode(PacketByteBuf buffer) {
+		buffer.writeBoolean(this.b1);
+		buffer.writeFloat(this.x);
+		buffer.writeFloat(this.y);
+		buffer.writeFloat(this.z);
+		buffer.writeFloat(this.rotW);
+		buffer.writeFloat(this.rotX);
+		buffer.writeFloat(this.rotY);
+		buffer.writeFloat(this.rotZ);
+		return buffer;
+	}
+	
+	public static DeviceData decode(PacketByteBuf buffer) {
+		return new DeviceData(buffer.readBoolean(), buffer.readFloat(), buffer.readFloat(), buffer.readFloat(),
+				buffer.readFloat(), buffer.readFloat(), buffer.readFloat(), buffer.readFloat());
 	}
 }

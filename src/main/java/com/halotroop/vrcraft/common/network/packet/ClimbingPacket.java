@@ -1,51 +1,41 @@
 package com.halotroop.vrcraft.common.network.packet;
 
-import com.halotroop.vrcraft.client.network.packet.VRS2CPacketListener;
+import com.halotroop.vrcraft.server.ServerConfig;
 import com.halotroop.vrcraft.server.VrCraftServer;
-import com.halotroop.vrcraft.server.network.packet.VRC2SPacketListener;
 import net.minecraft.network.PacketByteBuf;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class ClimbingPacket implements BiPacket {
-	public boolean allowClimbey = false;
-	public BlockListMode mode;
-	public List<? extends String> list;
+public class ClimbingPacket {
+	private boolean allowClimbey = true;
+	private final VRPacketHandlerV2.BlockListMode mode;
+	private final List<String> blockList;
 	
-	public ClimbingPacket() {}
+	private static final ServerConfig CONFIG = VrCraftServer.config;
 	
-	public ClimbingPacket(BlockListMode blockMode, List<String> list) {
-		this.mode = blockMode;
-		this.list = list;
+	public ClimbingPacket(VRPacketHandlerV2.BlockListMode mode, List<String> blockList) {
+		this.mode = mode;
+		this.blockList = blockList;
 	}
 	
-	@Override
-	public void read(PacketByteBuf buf) {
-		allowClimbey = buf.readByte() == 1;
-		buf.readByte();
-		// decode strings
+	public ClimbingPacket(boolean allowClimbey, VRPacketHandlerV2.BlockListMode mode, List<String> blockList) {
+		this(mode, blockList);
+		this.allowClimbey = allowClimbey;
 	}
 	
-	@Override
-	public void write(PacketByteBuf buf) {
-		buf.writeByte(1); // allow climbey
-		buf.writeEnumConstant(VrCraftServer.config.blockMode);
-		VrCraftServer.config.blockList.forEach(buf::writeString);
+	public PacketByteBuf encode(final PacketByteBuf buffer) {
+		buffer.writeByte(1); // allow climbey
+		buffer.writeEnumConstant(CONFIG.blockMode);
+		CONFIG.blockList.forEach(buffer::writeString);
+		return buffer;
 	}
 	
-	@Override
-	public void applyServer(VRC2SPacketListener listener) {
-		listener.applyClimbing();
-	}
-	
-	@Override
-	public void applyClient(VRS2CPacketListener listener) {
-		listener.applyClimbing(this);
-	}
-	
-	public enum BlockListMode {
-		NONE,
-		INCLUDE,
-		EXCLUDE
+	public static ClimbingPacket decode(final PacketByteBuf buffer) {
+		boolean allow = buffer.readByte() == 1;
+		VRPacketHandlerV2.BlockListMode mode = buffer.readEnumConstant(VRPacketHandlerV2.BlockListMode.class);
+		List<String> list = new ArrayList<>();
+		while (buffer.isReadable()) list.add(buffer.readString());
+		return new ClimbingPacket(allow, mode, list);
 	}
 }

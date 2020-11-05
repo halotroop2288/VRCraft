@@ -1,6 +1,8 @@
 package com.halotroop.vrcraft.common.util;
 
 import com.halotroop.vrcraft.common.VrCraft;
+import net.minecraft.block.Blocks;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.ai.goal.GoalSelector;
@@ -11,18 +13,22 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ArrowEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.RaycastContext;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Supplier;
 
 /**
  * A general utility class
- * @authors Techjar, halotroop2288
+ *
+ * @author Techjar, halotroop2288
  */
 public final class Util {
 	public static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
@@ -57,19 +63,23 @@ public final class Util {
 	
 	public static boolean shouldEndermanAttackVRPlayer(EndermanEntity enderman, PlayerEntity player) {
 		ItemStack itemstack = player.inventory.armor.get(3);
-		if (enderman.shouldAngerAt(player)) {
+		if (itemstack.getItem() == Blocks.CARVED_PUMPKIN.asItem() && PlayerTracker.hasPlayerData(player)) {
 			VRPlayerData data = PlayerTracker.getAbsolutePlayerData(player);
+			Quaternion quat = Objects.requireNonNull(data).head.getRotation();
+			Vec3d vector3d = multiplyQuat(quat, new Vec3d(0, 0, -1));
+			Vec3d vector3d1 = new Vec3d(enderman.getX() - data.head.x, enderman.getEyeY() - data.head.y, enderman.getZ() - data.head.z);
+			double d0 = vector3d1.length();
+			vector3d1 = vector3d1.normalize();
+			double d1 = vector3d.dotProduct(vector3d1);
+			return d1 > 1.0D - 0.025D / d0 && canEntityBeSeen(enderman, data.head.getPos());
 		}
 		return false;
 	}
 	
-	public static Vec3d add(Vec3d... a) {
-		Vec3d vec = a[0];
-		Iterator<Vec3d> iterator = Arrays.stream(a).iterator();
-		while (Arrays.stream(a).iterator().hasNext()) {
-			vec = new Vec3d(vec.x + iterator.next().x, vec.y + iterator.next().y, vec.z + iterator.next().z);
-		}
-		return vec;
+	public static boolean canEntityBeSeen(Entity entity, Vec3d playerEyePos) {
+		Vec3d entityEyePos = new Vec3d(entity.getX(), entity.getEyeY(), entity.getZ());
+		return entity.world.raycast(new RaycastContext(playerEyePos, entityEyePos, RaycastContext.ShapeType.COLLIDER,
+				RaycastContext.FluidHandling.NONE, entity)).getType() == BlockHitResult.Type.MISS;
 	}
 	
 	public static void replaceAIGoal(MobEntity entity, GoalSelector selector, Class<? extends Goal> targetGoal,
@@ -110,5 +120,14 @@ public final class Util {
 		double y = (num7 + num12) * vec.x + (1f - (num4 + num6)) * vec.y + (num9 - num10) * vec.z;
 		double z = (num8 - num11) * vec.x + (num9 + num10) * vec.y + (1f - (num4 + num5)) * vec.z;
 		return new Vec3d(x, y, z);
+	}
+	
+	public static Vec3d addAll(Vec3d... a) {
+		Vec3d vec = a[0];
+		Iterator<Vec3d> iterator = Arrays.stream(a).iterator();
+		while (iterator.hasNext()) {
+			vec = vec.add(iterator.next());
+		}
+		return vec;
 	}
 }

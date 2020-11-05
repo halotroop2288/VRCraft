@@ -1,10 +1,17 @@
 package com.halotroop.vrcraft.common.util;
 
+import com.halotroop.vrcraft.common.network.packet.UberPacket;
+import io.netty.buffer.Unpooled;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.PlayerManager;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -42,10 +49,12 @@ public final class PlayerTracker {
 		return data;
 	}
 	
+	@Nullable
 	public static VRPlayerData getPlayerData(PlayerEntity entity) {
 		return getPlayerData(entity, false);
 	}
 	
+	@Nullable
 	public static VRPlayerData getAbsolutePlayerData(PlayerEntity entity) {
 		VRPlayerData data = getPlayerData(entity);
 		if (data == null)
@@ -64,7 +73,7 @@ public final class PlayerTracker {
 		
 		absData.head.setPos(data.head.getPos().add(entity.getRotationVector()).add(data.offset));
 		absData.head.setRot(data.head.getRotation());
-		absData.controllerL.setPos(Util.add(Util.add(data.controllerL.getPos(), (entity.getRotationVector())), data.offset));
+		absData.controllerL.setPos(Util.addAll(data.controllerL.getPos(), (entity.getRotationVector()), data.offset));
 		absData.controllerL.setRot(data.controllerL.getRotation());
 		absData.controllerR.setPos(data.controllerR.getPos().add(entity.getRotationVector()).add(data.offset));
 		absData.controllerR.setRot(data.controllerR.getRotation());
@@ -76,7 +85,8 @@ public final class PlayerTracker {
 		return players.containsKey(entity.getGameProfile().getId());
 	}
 	
-	public static UberPacket getPlayerDataPacket(UUID uuid, VRPlayerData data) {
-		return new UberPacket(uuid, data, data.worldScale, data.height);
+	public static PacketByteBuf getUberPacketBytes(UUID uuid, VRPlayerData data) {
+		return new UberPacket(uuid, data.head, data.controllerL, data.controllerR, data.worldScale, data.height)
+				.encode(new PacketByteBuf(Unpooled.buffer()));
 	}
 }

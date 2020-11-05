@@ -18,6 +18,6 @@ public class VrCraftServer implements DedicatedServerModInitializer {
 	public void onInitializeServer() {
 		LOGGER.info("Initializing VRCraft Server...");
 		
-		ServerEventRegistrar.init();
+		ServerEventRegistrarV2.init();
 	}
 }

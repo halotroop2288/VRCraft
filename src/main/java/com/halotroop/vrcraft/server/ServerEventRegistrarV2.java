@@ -4,15 +4,14 @@ import com.halotroop.vrcraft.common.VrCraft;
 import com.halotroop.vrcraft.common.entity.ai.goal.VRCreeperIgniteGoal;
 import com.halotroop.vrcraft.common.entity.ai.goal.VREndermanChasePlayerGoal;
 import com.halotroop.vrcraft.common.entity.ai.goal.VREndermanTeleportTowardsPlayerGoal;
-import com.halotroop.vrcraft.common.network.packet.*;
+import com.halotroop.vrcraft.common.network.packet.DeviceData;
+import com.halotroop.vrcraft.common.network.packet.UberPacket;
+import com.halotroop.vrcraft.common.network.packet.VRPacketHandlerV2;
 import com.halotroop.vrcraft.common.util.PlayerTracker;
-import com.halotroop.vrcraft.common.util.UberPacket;
 import com.halotroop.vrcraft.common.util.Util;
 import com.halotroop.vrcraft.common.util.VRPlayerData;
-import com.halotroop.vrcraft.server.network.C2SPacket;
-import com.halotroop.vrcraft.server.network.packet.VRC2SPacketListener;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+import com.halotroop.vrcraft.server.network.packet.VRC2SPacketHandlerV2;
+import io.github.cottonmc.cotton.logging.ModLogger;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
@@ -23,25 +22,24 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.entity.projectile.TridentEntity;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
-import static com.halotroop.vrcraft.common.VrCraft.LOGGER;
-
-// I experimented with adding events that function exactly like the Forge equivalent,
-// but decided it's not worth the trouble. They're confusing and no one will use them anyway.
-@Environment(EnvType.SERVER)
-public class ServerEventRegistrar {
-	public static final ServerConfig config = VrCraftServer.config;
+public final class ServerEventRegistrarV2 {
+	public static final ServerConfig CONFIG = VrCraftServer.config;
+	public static final ModLogger LOGGER = VrCraft.LOGGER;
 	
-	public static void init() {
+	static void init() {
 		// onServerTick
 		ServerTickEvents.START_WORLD_TICK.register((world) -> {
 			PlayerManager playerManager = world.getServer().getPlayerManager();
@@ -51,8 +49,8 @@ public class ServerEventRegistrar {
 			for (Map.Entry<UUID, VRPlayerData> entry : PlayerTracker.players.entrySet()) {
 				ServerPlayerEntity player = playerManager.getPlayer(entry.getKey());
 				if (player != null) {
-					UberPacket packet = PlayerTracker.getPlayerDataPacket(entry.getKey(), entry.getValue());
-					ServerSidePacketRegistry.INSTANCE.sendToPlayer(player, packet);
+					PacketByteBuf packet = PlayerTracker.getUberPacketBytes(entry.getKey(), entry.getValue());
+					ServerSidePacketRegistry.INSTANCE.sendToPlayer(player, VRPacketHandlerV2.VIVECRAFT_CHANNEL_ID, packet);
 				}
 			}
 		});
@@ -60,25 +58,26 @@ public class ServerEventRegistrar {
 		ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
 			if (entity instanceof ServerPlayerEntity) {
 				ServerPlayerEntity player = (ServerPlayerEntity) entity;
-				if (config.vrOnly && !player.hasPermissionLevel(2)) { // VR-only not OP
+				if (CONFIG.vrOnly && !player.hasPermissionLevel(2)) { // VR-only not OP
 					Util.scheduler.schedule(() -> {
 						world.getServer().submit(() -> {
 							if (player.networkHandler.getConnection().isOpen()
 									&& !PlayerTracker.hasPlayerData(player)) {
-								player.sendMessage(new LiteralText(config.vrOnlyKickMessage), false);
+								player.sendMessage(new LiteralText(CONFIG.vrOnlyKickMessage), false);
 								player.sendMessage(new LiteralText("If this is not a VR client, " +
-										"you will be kicked in " + config.vrOnlyKickDelay
+										"you will be kicked in " + CONFIG.vrOnlyKickDelay
 										+ " second(s)"), false);
 								Util.scheduler.schedule(() -> {
 									world.getServer().submit(() -> {
 										if (player.networkHandler.getConnection().isOpen()
 												&& !PlayerTracker.hasPlayerData(player)) {
 											player.networkHandler.getConnection().disconnect(
-													new LiteralText(config.vrOnlyKickMessage));
+													new LiteralText(CONFIG.vrOnlyKickMessage));
 										}
 									});
-								}, Math.round(config.vrOnlyKickDelay * 1000), TimeUnit.MILLISECONDS);
-							}});
+								}, Math.round(CONFIG.vrOnlyKickDelay * 1000), TimeUnit.MILLISECONDS);
+							}
+						});
 					}, 1000, TimeUnit.MILLISECONDS);
 				}
 			} else if (entity instanceof ProjectileEntity) {
@@ -122,94 +121,44 @@ public class ServerEventRegistrar {
 			}
 		});
 		
-		// TODO: Diverge from Vivecraft and send these all as *different* packets instead of using a discriminator byte
-		//  This is one big confusing mess.
-		ServerSidePacketRegistry.INSTANCE.register(Util.vcID("data"), (context, data) -> {
+		ServerSidePacketRegistry.INSTANCE.register(VRPacketHandlerV2.VIVECRAFT_CHANNEL_ID, (context, data) -> {
 			if (!data.isReadable() || context.getPlayer() == null) return;
 			else LOGGER.devInfo("Received a valid Vivecraft packet!");
 			
-			PacketDiscriminators disc = PacketDiscriminators.values()[data.readByte()];
+			Packet disc = Packet.values()[data.readByte()];
+			ServerPlayerEntity player = (ServerPlayerEntity) context.getPlayer();
+			VRC2SPacketHandlerV2 handler = new VRC2SPacketHandlerV2(player, data);
 			
-			LOGGER.devInfo("It's a " + disc.name() + " packet.");
-			LOGGER.devInfo("If all goes well, another line should be printed about this packet now...");
-			
-			ServerPlayerEntity player = (ServerPlayerEntity) context.getPlayer(); // need access to player's server, aka this server instance
-			VRC2SPacketListener listener = new VRC2SPacketListener(player);
-			
-			VRPlayerData pd = PlayerTracker.players.get(context.getPlayer().getUuid());
-			if (pd == null && disc != PacketDiscriminators.VERSION) return;
-			
-			if (!ServerSidePacketRegistry.INSTANCE.canPlayerReceive(player, C2SPacket.VIVECRAFT_CHANNEL_ID)) {
-				LOGGER.warn(player.getDisplayName().asString() + "cannot receive vivecraft data packets.");
-				LOGGER.warn("Trying to send one anyway.");
-			}
-			
-			// Do this on the Server thread
-			context.getTaskQueue().execute(() -> {
-				switch (disc) {
-					case CONTROLLERLDATA:
-						new ControllerData().applyServer(listener);
-						break;
-					case CONTROLLERRDATA:
-						new ControllerData().right().applyServer(listener);
-						break;
-					case HEADDATA:
-						new HeadData().applyServer(listener);
-						break;
-					case UBERPACKET:
-						new UberPacket().applyServer(listener);
-						break;
-					case BOWDRAW:
-						new BowDrawPacket().applyServer(listener);
-						break;
-					case CRAWL:
-						new CrawlingPacket(data.readBoolean()).applyServer(listener);
-						break;
-					case HEIGHT:
-						new HeightPacket().applyServer(listener);
-						break;
-					case CLIMBING:
-						new ClimbingPacket().applyServer(listener);
-						break;
-					case TELEPORT:
-						new TeleportPacket().applyServer(listener);
-						break;
-					case ACTIVEHAND:
-						new ActiveHandPacket().applyServer(listener);
-						break;
-					case WORLDSCALE:
-						new WorldScalePacket().applyServer(listener);
-						break;
-					case VERSION:
-						new VersionPacket().applyServer(listener);
-						break;
-					case SETTING_OVERRIDE: // S2C
-					case MOVEMODE: // S2C
-					case REQUESTDATA: // S2C
-						LOGGER.warn("S2C packet was sent backwards!");
-						break;
-					default: // Unhandled
-						LOGGER.warn("Unhandled packet was received on server");
-				}
-			});
+			if (disc.action != null) context.getTaskQueue().execute(() -> disc.action.accept(handler));
+			else throw new IllegalStateException("Unhandled C2S packet!");
 		});
 	}
 	
-	public enum PacketDiscriminators {
-		VERSION, // VERSION_OH_AND_HEY_WHAT_DO_YOU_SUPPORT - Techjar
-		REQUESTDATA, // S2C Packet
-		HEADDATA, // HMD Headset
-		CONTROLLERLDATA, // Controller 0
-		CONTROLLERRDATA, // Controller 1
-		WORLDSCALE, // World Scale
-		BOWDRAW, // Bow draw
-		MOVEMODE, // S2C Packet
-		UBERPACKET, // L+R Controllers, HMD, world scale, and height
-		TELEPORT, // TP destination
-		CLIMBING, // Don't kick player for floating while climbing
-		SETTING_OVERRIDE, // S2C Packet
-		HEIGHT,
-		ACTIVEHAND,
-		CRAWL
+	public enum Packet {
+		VERSION(a -> a.version(VrCraft.MOD_VERSION)),
+		DATA_REQUEST((a) -> backwardsError()), // S2C Packet
+		HEAD_DATA(a -> a.hmd(DeviceData.decode(a.buffer))), // HMD Headset
+		CONTROLLER_L_DATA(a -> a.controller(VRPacketHandlerV2.Controller.LEFT)), // Controller 0
+		CONTROLLER_R_DATA(a -> a.controller(VRPacketHandlerV2.Controller.RIGHT)), // Controller 1
+		WORLD_SCALE(a -> a.worldScale(a.buffer.readFloat())), // World Scale
+		BOW_DRAW(VRC2SPacketHandlerV2::bowDraw), // Bow draw
+		MOVE_MODE(a -> backwardsError()), // S2C Packet
+		UBER_PACKET(a -> UberPacket.decode(a.buffer)), // L+R Controllers, HMD, world scale, and height
+		TELEPORT(VRC2SPacketHandlerV2::teleport), // TP destination
+		CLIMBING(a -> a.climbing(CONFIG.blockMode, CONFIG.blockList)), // Don't kick player for floating while climbing
+		SETTING_OVERRIDE(a -> backwardsError()), // S2C Packet
+		HEIGHT(VRC2SPacketHandlerV2::height),
+		ACTIVE_HAND(VRC2SPacketHandlerV2::activeHand),
+		CRAWLING(VRC2SPacketHandlerV2::crawling);
+		
+		private final Consumer<VRC2SPacketHandlerV2> action;
+		
+		Packet(@Nullable Consumer<VRC2SPacketHandlerV2> action) {
+			this.action = action;
+		}
+		
+		public static void backwardsError() {
+			LOGGER.warn("A packet traveled in the wrong direction!");
+		}
 	}
 }

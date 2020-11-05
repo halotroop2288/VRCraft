@@ -1,15 +1,13 @@
 package com.halotroop.vrcraft.common.util;
 
-import com.halotroop.vrcraft.common.network.packet.ControllerData;
-import com.halotroop.vrcraft.common.network.packet.HeadData;
-import io.netty.buffer.Unpooled;
+import com.halotroop.vrcraft.common.network.packet.DeviceData;
+import com.halotroop.vrcraft.common.network.packet.UberPacket;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.math.Vec3d;
 
 /**
  * An Object that represents a player's VR headset and controller data
- *
+ * <p>
  * This is a Frankenstein's monster of the classes that control this data in Vivecraft and in VFE
  *
  * @author Techjar, jrbudda, halotroop2288
@@ -17,9 +15,9 @@ import net.minecraft.util.math.Vec3d;
 public class VRPlayerData {
 	private static final Vec3d FORWARD = new Vec3d(0, 0, -1);
 	public Vec3d offset = new Vec3d(0, 0, 0);
-	public HeadData head = new HeadData();
-	public ControllerData controllerL = new ControllerData();
-	public ControllerData controllerR = new ControllerData().right();
+	public DeviceData head = new DeviceData();
+	public DeviceData controllerL = new DeviceData();
+	public DeviceData controllerR = new DeviceData();
 	public boolean handsReversed;
 	public float worldScale;
 	public boolean seated;
@@ -80,13 +78,7 @@ public class VRPlayerData {
 		return new UberPacket(player.getUuid(), head, controllerL, controllerR, worldScale, height);
 	}
 	
-	public byte[] getUberPacketBytes() {
-		PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-		getUberPacket().write(buf);
-		return buf.array();
-	}
-	
-	public ControllerData getController(int c) {
+	public DeviceData getController(int c) {
 		return c == 0 ? controllerL : controllerR;
 	}
 	
