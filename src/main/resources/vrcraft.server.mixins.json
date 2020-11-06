@@ -1,0 +1,12 @@
+{
+	"required": true,
+	"minVersion": "0.8",
+	"package": "com.halotroop.vrcraft.server.mixin",
+	"compatibilityLevel": "JAVA_8",
+	"server": [
+		"PlayerManagerMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
