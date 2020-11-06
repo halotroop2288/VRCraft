@@ -52,3 +52,8 @@ mutable field net/minecraft/network/ClientConnection channel Lio/netty/channel/C
 # ServerPlayNetworkHandler
 accessible field net/minecraft/server/network/ServerPlayNetworkHandler floatingTicks I
 mutable field net/minecraft/server/network/ServerPlayNetworkHandler floatingTicks I
+#
+# LivingEntityRenderer
+accessible field net/minecraft/client/render/entity/LivingEntityRenderer features Ljava/util/List;
+mutable field net/minecraft/client/render/entity/LivingEntityRenderer features Ljava/util/List;
+#

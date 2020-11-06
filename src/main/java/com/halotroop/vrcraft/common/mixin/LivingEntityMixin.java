@@ -1,11 +1,10 @@
-package com.halotroop.vrcraft.server.mixin;
+package com.halotroop.vrcraft.common.mixin;
 
 import com.halotroop.vrcraft.common.VrCraft;
 import com.halotroop.vrcraft.common.util.PlayerTracker;
 import com.halotroop.vrcraft.common.util.Util;
 import com.halotroop.vrcraft.common.util.VRPlayerData;
 import com.halotroop.vrcraft.server.ServerConfig;
-import com.halotroop.vrcraft.server.VrCraftServer;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
@@ -19,9 +18,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 // TODO: Check... is any of this right?
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin {
-	@Shadow public abstract boolean damage(DamageSource source, float amount);
+	@Shadow
+	public abstract boolean damage(DamageSource source, float amount);
 	
-	private static final ServerConfig config = VrCraftServer.config;
+	private static final ServerConfig config = VrCraft.SERVER_CONFIG;
 	
 	@Inject(method = "damage", at = @At("HEAD"))
 	protected void onDamageEntity(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
@@ -31,6 +31,7 @@ public abstract class LivingEntityMixin {
 			PlayerEntity player = (PlayerEntity) source.getAttacker();
 			if (PlayerTracker.hasPlayerData(player)) {
 				VRPlayerData data = PlayerTracker.getPlayerData(player);
+				assert data != null; // unsafe but if the hasPlayerData check works, it should be OK.
 				boolean headshot = Util.isHeadshot(((LivingEntity) (Object) this), arrow);
 				if (data.seated) { // Seated
 					if (headshot) newAmount = amount * config.seatedHeadshotMultiplier;

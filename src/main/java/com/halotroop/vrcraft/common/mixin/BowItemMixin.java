@@ -1,4 +1,4 @@
-package com.halotroop.vrcraft.server.mixin;
+package com.halotroop.vrcraft.common.mixin;
 
 import com.halotroop.vrcraft.common.VrCraft;
 import com.halotroop.vrcraft.common.util.PlayerTracker;
@@ -21,7 +21,7 @@ public abstract class BowItemMixin {
 	
 	@Inject(method = "onStoppedUsing", at = @At("INVOKE"))
 	protected void onArrowLoose(ItemStack stack, World world, LivingEntity user, int remainingUseTicks, CallbackInfo ci) {
-		VrCraft.LOGGER.devInfo(user.getDisplayName().asString() + " released bow.");
+		VrCraft.LOGGER.devInfo(user.getName().asString() + " released bow.");
 		int i = stack.getMaxUseTime() - remainingUseTicks;
 		if (user instanceof PlayerEntity) {
 			VRPlayerData data = PlayerTracker.getPlayerData((PlayerEntity) user);

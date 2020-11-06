@@ -1,8 +1,8 @@
 package com.halotroop.vrcraft.common.entity.ai.goal;
 
+import com.halotroop.vrcraft.common.VrCraft;
 import com.halotroop.vrcraft.common.util.PlayerTracker;
 import com.halotroop.vrcraft.common.util.VRPlayerData;
-import com.halotroop.vrcraft.server.VrCraftServer;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.CreeperIgniteGoal;
 import net.minecraft.entity.mob.CreeperEntity;
@@ -23,7 +23,7 @@ public class VRCreeperIgniteGoal extends CreeperIgniteGoal {
 			VRPlayerData data = PlayerTracker.getPlayerData((PlayerEntity)target);
 			if (data != null && !data.seated)
 				return this.creeper.getFuseSpeed() > 0 || this.creeper.squaredDistanceTo(target)
-						< VrCraftServer.config.creeperRadius * VrCraftServer.config.creeperRadius;
+						< VrCraft.SERVER_CONFIG.creeperRadius * VrCraft.SERVER_CONFIG.creeperRadius;
 		}
 		return super.canStart();
 	}

@@ -1,4 +1,4 @@
-package com.halotroop.vrcraft.client.util.external.external;
+package com.halotroop.vrcraft.client.util.external;
 
 import com.sun.jna.Library;
 import com.sun.jna.Native;

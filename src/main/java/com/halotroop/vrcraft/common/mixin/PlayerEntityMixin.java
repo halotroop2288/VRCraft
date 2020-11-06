@@ -1,17 +1,20 @@
-package com.halotroop.vrcraft.server.mixin;
+package com.halotroop.vrcraft.common.mixin;
 
+import com.halotroop.vrcraft.client.util.external.PatreonImpl;
 import com.halotroop.vrcraft.common.VrCraft;
 import com.halotroop.vrcraft.common.util.PlayerTracker;
 import com.halotroop.vrcraft.common.util.Util;
 import com.halotroop.vrcraft.common.util.VRPlayerData;
 import com.halotroop.vrcraft.server.ServerConfig;
-import com.halotroop.vrcraft.server.VrCraftServer;
+import com.mojang.authlib.GameProfile;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -21,7 +24,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(PlayerEntity.class)
 public abstract class PlayerEntityMixin {
-	private static final ServerConfig config = VrCraftServer.config;
+	private static final ServerConfig SERVER_CONFIG = VrCraft.SERVER_CONFIG;
+	
+	@Inject(method = "<init>", at = @At("TAIL"))
+	protected void onPlayerInit(World world, BlockPos pos, float yaw, GameProfile profile, CallbackInfo ci) {
+		PatreonImpl.addPlayerInfo((PlayerEntity) (Object) this);
+	}
+	
 	
 	@Inject(method = "attack", at = @At("INVOKE"))
 	protected void onAttackPlayer(Entity target, CallbackInfo ci) {
@@ -29,25 +38,26 @@ public abstract class PlayerEntityMixin {
 		if (target instanceof PlayerEntity) {
 			PlayerEntity victim = (PlayerEntity) target;
 			if (PlayerTracker.hasPlayerData(player)) {
-				VrCraft.LOGGER.devInfo("VR player " + player.getDisplayName() + " attacked player " + target.getDisplayName());
-				VRPlayerData vrPlayerData = PlayerTracker.getPlayerData(player);
-				if (vrPlayerData.seated) { // Seated VR vs...
-					if (PlayerTracker.hasPlayerData(victim) && !config.pvpSeatedVRvsSeatedVR)
+				VrCraft.LOGGER.devInfo("VR player " + player.getName() + " attacked player " + target.getName());
+				VRPlayerData vrPlayerData = PlayerTracker.getAbsolutePlayerData(player);
+				if (vrPlayerData != null && vrPlayerData.seated) { // Seated VR vs...
+					if (PlayerTracker.hasPlayerData(victim) && !SERVER_CONFIG.pvpSeatedVRvsSeatedVR)
 						ci.cancel(); // Seated VR
-					else if (!config.pvpVRvsSeatedVR) ci.cancel(); // VR
+					else if (!SERVER_CONFIG.pvpVRvsSeatedVR) ci.cancel(); // VR
 				} else { // VR vs...
 					if (!PlayerTracker.hasPlayerData(victim)) {
-						if (vrPlayerData.seated && !config.pvpVRvsSeatedVR) ci.cancel(); // Seated VR
-						else if (!config.pvpVRvsVR) ci.cancel(); // VR
-					} else if (!config.pvpVRvsNonVR) ci.cancel(); // Non-VR
+						if (vrPlayerData != null && vrPlayerData.seated && !SERVER_CONFIG.pvpVRvsSeatedVR)
+							ci.cancel(); // Seated VR
+						else if (!SERVER_CONFIG.pvpVRvsVR) ci.cancel(); // VR
+					} else if (!SERVER_CONFIG.pvpVRvsNonVR) ci.cancel(); // Non-VR
 				}
 			} else { // Non-VR vs...
 				if (PlayerTracker.hasPlayerData(victim)) {
-					VRPlayerData vrPlayerData = PlayerTracker.getPlayerData(player);
-					if (vrPlayerData.seated) { // Seated
-						if (!config.pvpSeatedVRvsNonVR) ci.cancel();
+					VRPlayerData victimPlayerData = PlayerTracker.getPlayerData(victim);
+					if (victimPlayerData != null && victimPlayerData.seated) { // Seated
+						if (!SERVER_CONFIG.pvpSeatedVRvsNonVR) ci.cancel();
 					} else { // ...VR
-						if (!config.pvpVRvsNonVR) ci.cancel();
+						if (!SERVER_CONFIG.pvpVRvsNonVR) ci.cancel();
 					}
 				}
 			}

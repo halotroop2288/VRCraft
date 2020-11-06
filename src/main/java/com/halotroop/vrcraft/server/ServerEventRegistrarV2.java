@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public final class ServerEventRegistrarV2 {
-	public static final ServerConfig CONFIG = VrCraftServer.config;
+	public static final ServerConfig CONFIG = VrCraft.SERVER_CONFIG;
 	public static final ModLogger LOGGER = VrCraft.LOGGER;
 	
 	static void init() {
@@ -55,6 +55,7 @@ public final class ServerEventRegistrarV2 {
 			}
 		});
 		
+		// onPlayerJoinServer
 		ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
 			if (entity instanceof ServerPlayerEntity) {
 				ServerPlayerEntity player = (ServerPlayerEntity) entity;

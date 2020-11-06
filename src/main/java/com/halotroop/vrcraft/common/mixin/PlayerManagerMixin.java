@@ -1,4 +1,4 @@
-package com.halotroop.vrcraft.server.mixin;
+package com.halotroop.vrcraft.common.mixin;
 
 import com.halotroop.vrcraft.server.util.AimFixHandler;
 import net.minecraft.network.ClientConnection;

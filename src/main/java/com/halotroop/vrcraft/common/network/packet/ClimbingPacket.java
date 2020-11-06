@@ -1,7 +1,7 @@
 package com.halotroop.vrcraft.common.network.packet;
 
+import com.halotroop.vrcraft.common.VrCraft;
 import com.halotroop.vrcraft.server.ServerConfig;
-import com.halotroop.vrcraft.server.VrCraftServer;
 import net.minecraft.network.PacketByteBuf;
 
 import java.util.ArrayList;
@@ -12,7 +12,7 @@ public class ClimbingPacket {
 	private final VRPacketHandlerV2.BlockListMode mode;
 	private final List<String> blockList;
 	
-	private static final ServerConfig CONFIG = VrCraftServer.config;
+	private static final ServerConfig CONFIG = VrCraft.SERVER_CONFIG;
 	
 	public ClimbingPacket(VRPacketHandlerV2.BlockListMode mode, List<String> blockList) {
 		this.mode = mode;

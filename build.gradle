@@ -71,6 +71,7 @@ dependencies {
 	// Externals (used to be manually copied in)
 	shadowCompile('graphics.scenery:jopenvr:1.0.5.3')
 	shadowCompile('org.joml:joml:1.9.25')
+	shadowCompile('com.patreon:patreon:0.4.2')
 
 	// For logging and configuration
 	jijApi("io.github.cottonmc:Jankson-Fabric:2.0.1+j1.2.0")

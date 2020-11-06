@@ -1,0 +1,12 @@
+{
+	"required": true,
+	"minVersion": "0.8",
+	"package": "com.halotroop.vrcraft.client.mixin",
+	"compatibilityLevel": "JAVA_8",
+	"client": [
+		"PlayerEntityRendererMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

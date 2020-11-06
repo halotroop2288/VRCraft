@@ -1,6 +1,7 @@
 package com.halotroop.vrcraft.server.network.packet;
 
 import com.halotroop.vrcraft.client.network.packet.SettingOverridePacket;
+import com.halotroop.vrcraft.common.VrCraft;
 import com.halotroop.vrcraft.common.network.packet.ClimbingPacket;
 import com.halotroop.vrcraft.common.network.packet.DeviceData;
 import com.halotroop.vrcraft.common.network.packet.VRPacketHandlerV2;
@@ -8,7 +9,6 @@ import com.halotroop.vrcraft.common.util.PlayerTracker;
 import com.halotroop.vrcraft.common.util.VRPlayerData;
 import com.halotroop.vrcraft.server.ServerConfig;
 import com.halotroop.vrcraft.server.ServerEventRegistrarV2;
-import com.halotroop.vrcraft.server.VrCraftServer;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -84,7 +84,7 @@ public class VRC2SPacketHandlerV2 extends VRPacketHandlerV2 {
 	
 	@Override
 	public void version(String message) {
-		final ServerConfig CONFIG = VrCraftServer.config;
+		final ServerConfig CONFIG = VrCraft.SERVER_CONFIG;
 		
 		if (message.toLowerCase().contains("vivecraft") && !CONFIG.allowVivecraft)
 			player.networkHandler.getConnection().disconnect(new LiteralText(CONFIG.vivecraftDisconnectMessage));
@@ -98,7 +98,7 @@ public class VRC2SPacketHandlerV2 extends VRPacketHandlerV2 {
 			PlayerTracker.nonVRPlayers.add(this.player.getUuid());
 			if (CONFIG.welcomeMsgEnabled && this.player.getServer() != null)
 				this.player.getServer().getPlayerManager().broadcastChatMessage(
-						new LiteralText(String.format(CONFIG.welcomeNonVR, player.getDisplayName().asString())),
+						new LiteralText(String.format(CONFIG.welcomeNonVR, player.getName().asString())),
 						MessageType.SYSTEM, Util.NIL_UUID);
 		} else {
 			LOGGER.info("Non-VR player joined");
@@ -129,7 +129,7 @@ public class VRC2SPacketHandlerV2 extends VRPacketHandlerV2 {
 			PlayerTracker.players.put(Objects.requireNonNull(player).getGameProfile().getId(), new VRPlayerData(player));
 			if (CONFIG.welcomeMsgEnabled && !CONFIG.welcomeVR.isEmpty() && player.getServer() != null) {
 				player.getServer().getPlayerManager().broadcastChatMessage(
-						new LiteralText(String.format(CONFIG.welcomeVR, player.getDisplayName().asString())),
+						new LiteralText(String.format(CONFIG.welcomeVR, player.getName().asString())),
 						MessageType.SYSTEM, Util.NIL_UUID);
 			}
 		}

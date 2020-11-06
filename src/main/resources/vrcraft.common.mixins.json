@@ -1,13 +1,15 @@
 {
 	"required": true,
 	"minVersion": "0.8",
-	"package": "com.halotroop.vrcraft.server.mixin",
+	"package": "com.halotroop.vrcraft.common.mixin",
 	"compatibilityLevel": "JAVA_8",
-	"server": [
+	"mixins": [
 		"BowItemMixin",
-		"PlayerManagerMixin",
 		"LivingEntityMixin",
 		"PlayerEntityMixin"
+	],
+	"server": [
+		"PlayerManagerMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

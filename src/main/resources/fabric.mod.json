@@ -26,7 +26,8 @@
 		]
 	},
 	"mixins": [
-		"vrcraft.server.mixins.json"
+		"vrcraft.client.mixins.json",
+		"vrcraft.common.mixins.json"
 	],
 	"accessWidener": "vrcraft.aw",
 	
