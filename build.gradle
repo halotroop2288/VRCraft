@@ -15,6 +15,8 @@ plugins {
 
 apply plugin: "com.github.johnrengelman.shadow"
 
+version = project.mod_version
+
 repositories {
 	mavenLocal()
 	jcenter()
@@ -40,6 +42,30 @@ repositories {
 	}
 }
 
+dependencies {
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	modImplementation "io.github.prospector:modmenu:${project.modmenu_version}"
+
+	modImplementation "me.shedaniel:RoughlyEnoughItems:+"
+	modRuntime "com.github.SuperCoder7979:databreaker:715b589"
+
+	// Rendering
+	modRuntime "com.github.jellysquid3:lithium-fabric:mc1.16.3-0.5.6"
+//  modRuntime "com.github.jellysquid3:sodium-fabric:mc1.16.3-0.1.0" // Abandoned compatibility for now.
+
+	// Externals (used to be manually copied in)
+	shadowCompile('graphics.scenery:jopenvr:1.0.5.3')
+	shadowCompile('org.joml:joml:1.9.25')
+
+	// For logging and configuration
+	jijApi("io.github.cottonmc:Jankson-Fabric:2.0.1+j1.2.0")
+	jijApi("io.github.cottonmc.cotton:Cotton:2.0.0") // Forked from Cotton
+	jijApi("ca.stellardrift:confabricate:1.3+3.7.1")
+}
+
 // Jar-In-Jar an API mod
 def jijApi(dep) {
 	dependencies.modApi(dep) {
@@ -52,31 +78,6 @@ def jijApi(dep) {
 def shadowCompile(dep) {
 	dependencies.shadow(dep)
 	dependencies.compile(dep)
-}
-
-dependencies {
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	modImplementation "io.github.prospector:modmenu:+"
-
-	modImplementation "me.shedaniel:RoughlyEnoughItems:+"
-	modRuntime "com.github.SuperCoder7979:databreaker:715b589"
-
-	// Rendering
-	modRuntime "com.github.jellysquid3:lithium-fabric:mc1.16.3-0.5.6"
-//    modRuntime "com.github.jellysquid3:sodium-fabric:mc1.16.3-0.1.0" // Abandoned compatibility for now.
-
-	// Externals (used to be manually copied in)
-	shadowCompile('graphics.scenery:jopenvr:1.0.5.3')
-	shadowCompile('org.joml:joml:1.9.25')
-	shadowCompile('com.patreon:patreon:0.4.2')
-
-	// For logging and configuration
-	jijApi("io.github.cottonmc:Jankson-Fabric:2.0.1+j1.2.0")
-	jijApi("io.github.cottonmc.cotton:Cotton:2.0.0") // Forked from Cotton
-	jijApi("ca.stellardrift:confabricate:1.3+3.7.1")
 }
 
 minecraft {
