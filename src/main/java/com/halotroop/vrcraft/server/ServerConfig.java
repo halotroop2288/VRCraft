@@ -1,6 +1,6 @@
 package com.halotroop.vrcraft.server;
 
-import com.halotroop.vrcraft.common.network.packet.VRPacketHandler;
+import com.halotroop.vrcraft.common.network.packet.ClimbingPacket;
 import io.github.cottonmc.cotton.config.annotations.ConfigFile;
 import me.sargunvohra.mcmods.autoconfig1u.shadowed.blue.endless.jankson.Comment;
 
@@ -91,7 +91,7 @@ public class ServerConfig {
 			"'None': List ignored. All blocks are climbable. " +
 			"'Include': Only blocks on the list are climbable. " +
 			"'Exclude': All blocks are climbable except those on the list")
-	public VRPacketHandler.BlockListMode blockMode = VRPacketHandler.BlockListMode.NONE;
+	public ClimbingPacket.BlockListMode blockMode = ClimbingPacket.BlockListMode.NONE;
 	@Comment("The list of block names for use with include/exclude block mode.")
 	public List<String> blockList = Arrays.asList("white_wool", "dirt", "grass_block");
 	

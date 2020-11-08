@@ -1,41 +1,56 @@
 package com.halotroop.vrcraft.common.network.packet;
 
-import com.halotroop.vrcraft.common.VrCraft;
-import com.halotroop.vrcraft.server.ServerConfig;
+import com.halotroop.vrcraft.server.VrCraftServer;
+import net.fabricmc.fabric.api.network.PacketContext;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.network.ServerPlayerEntity;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class ClimbingPacket {
-	private boolean allowClimbey = true;
-	private final VRPacketHandler.BlockListMode mode;
-	private final List<String> blockList;
+/*
+ * For whatever reason this uses a serializer instead of just
+ * packing the data into the buffer.
+ */
+public class ClimbingPacket implements VivecraftPacket {
 	
-	private static final ServerConfig CONFIG = VrCraft.SERVER_CONFIG;
+	public BlockListMode blockListMode;
+	public List<? extends String> blockList;
 	
-	public ClimbingPacket(VRPacketHandler.BlockListMode mode, List<String> blockList) {
-		this.mode = mode;
+	public ClimbingPacket() {
+	}
+	
+	public ClimbingPacket(BlockListMode blockListMode, List<? extends String> blockList) {
+		this.blockListMode = blockListMode;
 		this.blockList = blockList;
 	}
 	
-	public ClimbingPacket(boolean allowClimbey, VRPacketHandler.BlockListMode mode, List<String> blockList) {
-		this(mode, blockList);
-		this.allowClimbey = allowClimbey;
-	}
-	
-	public PacketByteBuf encode(final PacketByteBuf buffer) {
+	@Override
+	public void encode(final PacketByteBuf buffer) {
 		buffer.writeByte(1); // allow climbey
-		buffer.writeEnumConstant(CONFIG.blockMode);
-		CONFIG.blockList.forEach(buffer::writeString);
-		return buffer;
+		buffer.writeByte(VrCraftServer.CONFIG.blockMode.ordinal());
+		for (String s : VrCraftServer.CONFIG.blockList) {
+			buffer.writeString(s);
+		}
 	}
 	
-	public static ClimbingPacket decode(final PacketByteBuf buffer) {
-		boolean allow = buffer.readByte() == 1;
-		VRPacketHandler.BlockListMode mode = buffer.readEnumConstant(VRPacketHandler.BlockListMode.class);
-		List<String> list = new ArrayList<>();
-		while (buffer.isReadable()) list.add(buffer.readString());
-		return new ClimbingPacket(allow, mode, list);
+	@Override
+	public void decode(final PacketByteBuf buffer) {
+	}
+	
+	@Override
+	public void handleClient(final PacketContext context) {
+	}
+	
+	@Override
+	public void handleServer(final PacketContext context) {
+		ServerPlayerEntity player = (ServerPlayerEntity) context.getPlayer();
+		player.fallDistance = 0;
+		player.networkHandler.floatingTicks = 0;
+	}
+	
+	public enum BlockListMode {
+		NONE,
+		INCLUDE,
+		EXCLUDE
 	}
 }

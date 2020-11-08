@@ -18,10 +18,11 @@ import java.util.concurrent.ConcurrentHashMap;
  * A utility class that tracks the VR Data of each player
  */
 public final class PlayerTracker {
-	public static Map<UUID, VRPlayerData> players = new ConcurrentHashMap<>();
-	public static Set<UUID> nonVRPlayers = ConcurrentHashMap.newKeySet();
+	public static final Map<UUID, VRPlayerData> players = new ConcurrentHashMap<>();
+	public static final Set<UUID> nonVRPlayers = ConcurrentHashMap.newKeySet();
 	
-	private PlayerTracker() {}
+	private PlayerTracker() {
+	}
 	
 	public static void tick(PlayerManager playerManager) {
 		for (Iterator<Map.Entry<UUID, VRPlayerData>> it = players.entrySet().iterator(); it.hasNext(); ) {
@@ -73,10 +74,10 @@ public final class PlayerTracker {
 		
 		absData.head.setPos(data.head.getPos().add(entity.getRotationVector()).add(data.offset));
 		absData.head.setRot(data.head.getRotation());
-		absData.controllerR.setPos(Util.addAll(data.controllerR.getPos(), (entity.getRotationVector()), data.offset));
-		absData.controllerR.setRot(data.controllerR.getRotation());
-		absData.controllerL.setPos(data.controllerL.getPos().add(entity.getRotationVector()).add(data.offset));
-		absData.controllerL.setRot(data.controllerL.getRotation());
+		absData.controller0.setPos(Util.addAll(data.controller0.getPos(), (entity.getRotationVector()), data.offset));
+		absData.controller0.setRot(data.controller0.getRotation());
+		absData.controller1.setPos(data.controller1.getPos().add(entity.getRotationVector()).add(data.offset));
+		absData.controller1.setRot(data.controller1.getRotation());
 		
 		return absData;
 	}
@@ -86,7 +87,8 @@ public final class PlayerTracker {
 	}
 	
 	public static PacketByteBuf getUberPacketBytes(UUID uuid, VRPlayerData data) {
-		return new UberPacket(uuid, data.head, data.controllerR, data.controllerL, data.worldScale, data.height)
-				.encode(new PacketByteBuf(Unpooled.buffer()));
+		PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
+		new UberPacket(uuid, data.head, data.controller0, data.controller1, data.worldScale, data.height).encode(buffer);
+		return buffer;
 	}
 }

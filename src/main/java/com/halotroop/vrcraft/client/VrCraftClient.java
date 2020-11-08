@@ -1,6 +1,5 @@
 package com.halotroop.vrcraft.client;
 
-import com.halotroop.vrcraft.client.network.packet.ClientVRPacketRegistrar;
 import io.github.cottonmc.cotton.config.ConfigManager;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
@@ -19,6 +18,5 @@ public class VrCraftClient implements ClientModInitializer {
 		LOGGER.info("Initializing VRCraft Client...");
 		CLIENT_CONFIG = ConfigManager.loadConfig(ClientConfig.class);
 		ClientEventRegistrar.init();
-		ClientVRPacketRegistrar.init();
 	}
 }

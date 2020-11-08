@@ -1,7 +1,6 @@
 package com.halotroop.vrcraft.common.util;
 
-import com.halotroop.vrcraft.common.network.packet.DeviceData;
-import com.halotroop.vrcraft.common.network.packet.UberPacket;
+import com.halotroop.vrcraft.common.network.packet.DeviceDataPacket;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.Vec3d;
 
@@ -15,9 +14,9 @@ import net.minecraft.util.math.Vec3d;
 public class VRPlayerData {
 	private static final Vec3d FORWARD = new Vec3d(0, 0, -1);
 	public Vec3d offset = new Vec3d(0, 0, 0);
-	public DeviceData head = new DeviceData();
-	public DeviceData controllerR = new DeviceData();
-	public DeviceData controllerL = new DeviceData();
+	public DeviceDataPacket head = new DeviceDataPacket(DeviceDataPacket.Device.HMD);
+	public DeviceDataPacket controller0 = new DeviceDataPacket(DeviceDataPacket.Device.CONTROLLER_0);
+	public DeviceDataPacket controller1 = new DeviceDataPacket(DeviceDataPacket.Device.CONTROLLER_1);
 	public boolean handsReversed;
 	public float worldScale;
 	public boolean seated;
@@ -29,16 +28,19 @@ public class VRPlayerData {
 	public boolean vr = true;
 	public PlayerEntity player;
 	
+	public VRPlayerData() {
+	}
+	
 	public VRPlayerData(PlayerEntity player) {
 		this.player = player;
 	}
-
+	
 	public float getBowDraw() {
 		return bowDraw;
 	}
 	
 	public Vec3d getControllerVectorCustom(int controller, Vec3d direction) {
-		return Util.multiplyQuat(controller == 0 ? this.controllerR.getRotation() : controllerL.getRotation(), direction);
+		return Util.multiplyQuat(controller == 0 ? this.controller0.getRotation() : controller1.getRotation(), direction);
 	}
 	
 	public Vec3d getHMDDirection() {
@@ -74,12 +76,8 @@ public class VRPlayerData {
 		return seated;
 	}
 	
-	public UberPacket getUberPacket() {
-		return new UberPacket(player.getUuid(), head, controllerR, controllerL, worldScale, height);
-	}
-	
-	public DeviceData getController(int c) {
-		return c == 0 ? controllerR : controllerL;
+	public DeviceDataPacket getController(int c) {
+		return c == 0 ? controller0 : controller1;
 	}
 	
 }

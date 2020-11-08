@@ -41,7 +41,7 @@ public class AimFixHandler extends ChannelInboundHandlerAdapter {
 			return;
 		}
 		
-		VrCraft.LOGGER.devInfo("Captured message " + msg.getClass().getSimpleName());
+		VrCraft.LOGGER.debug("Captured message " + msg.getClass().getSimpleName());
 		player.getServer().submit(() -> {
 			// Save all the current orientation data
 			Vec3d oldPos = player.getPos();
@@ -84,7 +84,7 @@ public class AimFixHandler extends ChannelInboundHandlerAdapter {
 				if (connection.isOpen()) {
 					try {
 						((Packet<PacketListener>) msg).apply(connection.getPacketListener());
-					} catch (OffThreadException e) { // Apparently might get thrown and can be ignored
+					} catch (OffThreadException ignored) { // Apparently might get thrown and can be ignored
 					}
 				}
 			} finally {
