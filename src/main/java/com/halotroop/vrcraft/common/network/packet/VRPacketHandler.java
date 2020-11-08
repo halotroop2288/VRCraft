@@ -2,16 +2,14 @@ package com.halotroop.vrcraft.common.network.packet;
 
 import com.halotroop.vrcraft.common.util.VRPlayerData;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
 
 import java.util.List;
 
-public abstract class VRPacketHandlerV2 {
-	public static final Identifier VIVECRAFT_CHANNEL_ID = new Identifier("vivecraft", "data");
+public abstract class VRPacketHandler {
 	public final VRPlayerData data;
 	public final PacketByteBuf buffer;
 	
-	public VRPacketHandlerV2(VRPlayerData data, PacketByteBuf buffer) {
+	public VRPacketHandler(VRPlayerData data, PacketByteBuf buffer) {
 		this.data = data;
 		this.buffer = buffer;
 	}
@@ -26,15 +24,21 @@ public abstract class VRPacketHandlerV2 {
 	
 	public abstract void crawling();
 	
-	public abstract void hmd(DeviceData hData);
+	public void hmd() {
+		this.data.head = DeviceData.decode(this.buffer);
+	}
 	
-	public abstract void height();
+	public void height() {
+		this.data.height = this.buffer.readFloat();
+	}
 	
 	public abstract void teleport();
 	
 	public abstract void version(String message);
 	
-	public abstract void worldScale(float worldScale);
+	public void worldScale() {
+		data.worldScale = buffer.readFloat();
+	}
 	
 	public enum BlockListMode {
 		NONE,
@@ -44,6 +48,6 @@ public abstract class VRPacketHandlerV2 {
 	
 	// TODO: Make this extensible to many controllers
 	public enum Controller {
-		LEFT, RIGHT
+		RIGHT, LEFT
 	}
 }

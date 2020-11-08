@@ -9,17 +9,17 @@ import java.util.List;
 
 public class ClimbingPacket {
 	private boolean allowClimbey = true;
-	private final VRPacketHandlerV2.BlockListMode mode;
+	private final VRPacketHandler.BlockListMode mode;
 	private final List<String> blockList;
 	
 	private static final ServerConfig CONFIG = VrCraft.SERVER_CONFIG;
 	
-	public ClimbingPacket(VRPacketHandlerV2.BlockListMode mode, List<String> blockList) {
+	public ClimbingPacket(VRPacketHandler.BlockListMode mode, List<String> blockList) {
 		this.mode = mode;
 		this.blockList = blockList;
 	}
 	
-	public ClimbingPacket(boolean allowClimbey, VRPacketHandlerV2.BlockListMode mode, List<String> blockList) {
+	public ClimbingPacket(boolean allowClimbey, VRPacketHandler.BlockListMode mode, List<String> blockList) {
 		this(mode, blockList);
 		this.allowClimbey = allowClimbey;
 	}
@@ -33,7 +33,7 @@ public class ClimbingPacket {
 	
 	public static ClimbingPacket decode(final PacketByteBuf buffer) {
 		boolean allow = buffer.readByte() == 1;
-		VRPacketHandlerV2.BlockListMode mode = buffer.readEnumConstant(VRPacketHandlerV2.BlockListMode.class);
+		VRPacketHandler.BlockListMode mode = buffer.readEnumConstant(VRPacketHandler.BlockListMode.class);
 		List<String> list = new ArrayList<>();
 		while (buffer.isReadable()) list.add(buffer.readString());
 		return new ClimbingPacket(allow, mode, list);

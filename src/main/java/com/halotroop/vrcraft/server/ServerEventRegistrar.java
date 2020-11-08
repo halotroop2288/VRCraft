@@ -4,14 +4,12 @@ import com.halotroop.vrcraft.common.VrCraft;
 import com.halotroop.vrcraft.common.entity.ai.goal.VRCreeperIgniteGoal;
 import com.halotroop.vrcraft.common.entity.ai.goal.VREndermanChasePlayerGoal;
 import com.halotroop.vrcraft.common.entity.ai.goal.VREndermanTeleportTowardsPlayerGoal;
-import com.halotroop.vrcraft.common.network.packet.DeviceData;
-import com.halotroop.vrcraft.common.network.packet.UberPacket;
-import com.halotroop.vrcraft.common.network.packet.VRPacketHandlerV2;
 import com.halotroop.vrcraft.common.util.PlayerTracker;
 import com.halotroop.vrcraft.common.util.Util;
 import com.halotroop.vrcraft.common.util.VRPlayerData;
-import com.halotroop.vrcraft.server.network.packet.VRC2SPacketHandlerV2;
 import io.github.cottonmc.cotton.logging.ModLogger;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
@@ -28,14 +26,13 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
-public final class ServerEventRegistrarV2 {
+@Environment(EnvType.SERVER)
+public final class ServerEventRegistrar {
 	public static final ServerConfig CONFIG = VrCraft.SERVER_CONFIG;
 	public static final ModLogger LOGGER = VrCraft.LOGGER;
 	
@@ -50,7 +47,7 @@ public final class ServerEventRegistrarV2 {
 				ServerPlayerEntity player = playerManager.getPlayer(entry.getKey());
 				if (player != null) {
 					PacketByteBuf packet = PlayerTracker.getUberPacketBytes(entry.getKey(), entry.getValue());
-					ServerSidePacketRegistry.INSTANCE.sendToPlayer(player, VRPacketHandlerV2.VIVECRAFT_CHANNEL_ID, packet);
+					ServerSidePacketRegistry.INSTANCE.sendToPlayer(player, VrCraft.VIVECRAFT_CHANNEL_ID, packet);
 				}
 			}
 		});
@@ -121,45 +118,5 @@ public final class ServerEventRegistrarV2 {
 						() -> new VREndermanTeleportTowardsPlayerGoal(enderman, enderman::shouldAngerAt));
 			}
 		});
-		
-		ServerSidePacketRegistry.INSTANCE.register(VRPacketHandlerV2.VIVECRAFT_CHANNEL_ID, (context, data) -> {
-			if (!data.isReadable() || context.getPlayer() == null) return;
-			else LOGGER.devInfo("Received a valid Vivecraft packet!");
-			
-			Packet disc = Packet.values()[data.readByte()];
-			ServerPlayerEntity player = (ServerPlayerEntity) context.getPlayer();
-			VRC2SPacketHandlerV2 handler = new VRC2SPacketHandlerV2(player, data);
-			
-			if (disc.action != null) context.getTaskQueue().execute(() -> disc.action.accept(handler));
-			else throw new IllegalStateException("Unhandled C2S packet!");
-		});
-	}
-	
-	public enum Packet {
-		VERSION(a -> a.version(VrCraft.MOD_VERSION)),
-		DATA_REQUEST((a) -> backwardsError()), // S2C Packet
-		HEAD_DATA(a -> a.hmd(DeviceData.decode(a.buffer))), // HMD Headset
-		CONTROLLER_L_DATA(a -> a.controller(VRPacketHandlerV2.Controller.LEFT)), // Controller 0
-		CONTROLLER_R_DATA(a -> a.controller(VRPacketHandlerV2.Controller.RIGHT)), // Controller 1
-		WORLD_SCALE(a -> a.worldScale(a.buffer.readFloat())), // World Scale
-		BOW_DRAW(VRC2SPacketHandlerV2::bowDraw), // Bow draw
-		MOVE_MODE(a -> backwardsError()), // S2C Packet
-		UBER_PACKET(a -> UberPacket.decode(a.buffer)), // L+R Controllers, HMD, world scale, and height
-		TELEPORT(VRC2SPacketHandlerV2::teleport), // TP destination
-		CLIMBING(a -> a.climbing(CONFIG.blockMode, CONFIG.blockList)), // Don't kick player for floating while climbing
-		SETTING_OVERRIDE(a -> backwardsError()), // S2C Packet
-		HEIGHT(VRC2SPacketHandlerV2::height),
-		ACTIVE_HAND(VRC2SPacketHandlerV2::activeHand),
-		CRAWLING(VRC2SPacketHandlerV2::crawling);
-		
-		private final Consumer<VRC2SPacketHandlerV2> action;
-		
-		Packet(@Nullable Consumer<VRC2SPacketHandlerV2> action) {
-			this.action = action;
-		}
-		
-		public static void backwardsError() {
-			LOGGER.warn("A packet traveled in the wrong direction!");
-		}
 	}
 }

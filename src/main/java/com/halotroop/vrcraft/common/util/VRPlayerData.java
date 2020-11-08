@@ -16,8 +16,8 @@ public class VRPlayerData {
 	private static final Vec3d FORWARD = new Vec3d(0, 0, -1);
 	public Vec3d offset = new Vec3d(0, 0, 0);
 	public DeviceData head = new DeviceData();
-	public DeviceData controllerL = new DeviceData();
 	public DeviceData controllerR = new DeviceData();
+	public DeviceData controllerL = new DeviceData();
 	public boolean handsReversed;
 	public float worldScale;
 	public boolean seated;
@@ -38,7 +38,7 @@ public class VRPlayerData {
 	}
 	
 	public Vec3d getControllerVectorCustom(int controller, Vec3d direction) {
-		return Util.multiplyQuat(controller == 0 ? controllerL.getRotation() : controllerR.getRotation(), direction);
+		return Util.multiplyQuat(controller == 0 ? this.controllerR.getRotation() : controllerL.getRotation(), direction);
 	}
 	
 	public Vec3d getHMDDirection() {
@@ -75,11 +75,11 @@ public class VRPlayerData {
 	}
 	
 	public UberPacket getUberPacket() {
-		return new UberPacket(player.getUuid(), head, controllerL, controllerR, worldScale, height);
+		return new UberPacket(player.getUuid(), head, controllerR, controllerL, worldScale, height);
 	}
 	
 	public DeviceData getController(int c) {
-		return c == 0 ? controllerL : controllerR;
+		return c == 0 ? controllerR : controllerL;
 	}
 	
 }

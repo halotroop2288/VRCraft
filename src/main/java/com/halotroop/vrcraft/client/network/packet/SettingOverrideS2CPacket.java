@@ -5,10 +5,10 @@ import net.minecraft.network.PacketByteBuf;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SettingOverridePacket {
+public class SettingOverrideS2CPacket {
 	public HashMap<String, Object> settings;
 	
-	public SettingOverridePacket(HashMap<String, Object> settings) {
+	public SettingOverrideS2CPacket(HashMap<String, Object> settings) {
 		this.settings = settings;
 	}
 	
@@ -20,11 +20,11 @@ public class SettingOverridePacket {
 		return buffer;
 	}
 	
-	public static SettingOverridePacket decode(final PacketByteBuf buffer) {
+	public static SettingOverrideS2CPacket decode(final PacketByteBuf buffer) {
 		HashMap<String, Object> settings = new HashMap<>();
 		while (buffer.isReadable()) {
 			settings.put(buffer.readString(32767), buffer.readString(32767));
 		}
-		return new SettingOverridePacket(settings);
+		return new SettingOverrideS2CPacket(settings);
 	}
 }

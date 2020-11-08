@@ -57,3 +57,9 @@ mutable field net/minecraft/server/network/ServerPlayNetworkHandler floatingTick
 accessible field net/minecraft/client/render/entity/LivingEntityRenderer features Ljava/util/List;
 mutable field net/minecraft/client/render/entity/LivingEntityRenderer features Ljava/util/List;
 #
+# GlStateManger (Sorry. This needs to be done.)
+accessible class com/mojang/blaze3d/platform/GlStateManager$BlendFuncState
+accessible class com/mojang/blaze3d/platform/GlStateManager$Color4
+accessible field com/mojang/blaze3d/platform/GlStateManager BLEND Lcom/mojang/blaze3d/platform/GlStateManager$BlendFuncState;
+mutable field com/mojang/blaze3d/platform/GlStateManager BLEND Lcom/mojang/blaze3d/platform/GlStateManager$BlendFuncState;
+#

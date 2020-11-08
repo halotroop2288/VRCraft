@@ -4,7 +4,11 @@
 	"package": "com.halotroop.vrcraft.client.mixin",
 	"compatibilityLevel": "JAVA_8",
 	"client": [
-		"PlayerEntityRendererMixin"
+		"AbstractClientPlayerEntityMixin",
+		"ClientPlayerEntityMixin",
+		"GLStateManagerMixin",
+		"PlayerEntityRendererMixin",
+		"RenderSystemMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

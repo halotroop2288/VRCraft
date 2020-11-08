@@ -1,20 +1,16 @@
 package com.halotroop.vrcraft.common.mixin;
 
-import com.halotroop.vrcraft.client.util.external.PatreonImpl;
 import com.halotroop.vrcraft.common.VrCraft;
 import com.halotroop.vrcraft.common.util.PlayerTracker;
 import com.halotroop.vrcraft.common.util.Util;
 import com.halotroop.vrcraft.common.util.VRPlayerData;
 import com.halotroop.vrcraft.server.ServerConfig;
-import com.mojang.authlib.GameProfile;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -25,12 +21,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(PlayerEntity.class)
 public abstract class PlayerEntityMixin {
 	private static final ServerConfig SERVER_CONFIG = VrCraft.SERVER_CONFIG;
-	
-	@Inject(method = "<init>", at = @At("TAIL"))
-	protected void onPlayerInit(World world, BlockPos pos, float yaw, GameProfile profile, CallbackInfo ci) {
-		PatreonImpl.addPlayerInfo((PlayerEntity) (Object) this);
-	}
-	
 	
 	@Inject(method = "attack", at = @At("INVOKE"))
 	protected void onAttackPlayer(Entity target, CallbackInfo ci) {

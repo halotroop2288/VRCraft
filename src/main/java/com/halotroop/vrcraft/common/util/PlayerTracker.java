@@ -73,10 +73,10 @@ public final class PlayerTracker {
 		
 		absData.head.setPos(data.head.getPos().add(entity.getRotationVector()).add(data.offset));
 		absData.head.setRot(data.head.getRotation());
-		absData.controllerL.setPos(Util.addAll(data.controllerL.getPos(), (entity.getRotationVector()), data.offset));
-		absData.controllerL.setRot(data.controllerL.getRotation());
-		absData.controllerR.setPos(data.controllerR.getPos().add(entity.getRotationVector()).add(data.offset));
+		absData.controllerR.setPos(Util.addAll(data.controllerR.getPos(), (entity.getRotationVector()), data.offset));
 		absData.controllerR.setRot(data.controllerR.getRotation());
+		absData.controllerL.setPos(data.controllerL.getPos().add(entity.getRotationVector()).add(data.offset));
+		absData.controllerL.setRot(data.controllerL.getRotation());
 		
 		return absData;
 	}
@@ -86,7 +86,7 @@ public final class PlayerTracker {
 	}
 	
 	public static PacketByteBuf getUberPacketBytes(UUID uuid, VRPlayerData data) {
-		return new UberPacket(uuid, data.head, data.controllerL, data.controllerR, data.worldScale, data.height)
+		return new UberPacket(uuid, data.head, data.controllerR, data.controllerL, data.worldScale, data.height)
 				.encode(new PacketByteBuf(Unpooled.buffer()));
 	}
 }

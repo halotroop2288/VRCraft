@@ -21,10 +21,6 @@ repositories {
 	mavenLocal()
 	jcenter()
 	maven {
-		name = "pex"
-		url = "https://repo.glaremasters.me/repository/permissionsex"
-	}
-	maven {
 		name = "CottonMC"
 		url = "http://server.bbkr.space:8081/artifactory/libs-release"
 	}
@@ -37,7 +33,11 @@ repositories {
 		url = "https://dl.bintray.com/redstoneparadox/mods"
 	}
 	maven {
-		name = "JitPack"
+		name "HalfOf2"
+		url "https://raw.githubusercontent.com/Devan-Kerman/Devan-Repo/master/"
+	}
+	maven {
+		name = "JITPack"
 		url = "https://jitpack.io"
 	}
 }
@@ -47,18 +47,17 @@ dependencies {
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	modImplementation "io.github.prospector:modmenu:${project.modmenu_version}"
+	modRuntime "io.github.prospector:modmenu:${project.modmenu_version}" exclude module: 'fabric-api'
 
 	modImplementation "me.shedaniel:RoughlyEnoughItems:+"
 	modRuntime "com.github.SuperCoder7979:databreaker:715b589"
 
 	// Rendering
-	modRuntime "com.github.jellysquid3:lithium-fabric:mc1.16.3-0.5.6"
+//	modRuntime "com.github.jellysquid3:lithium-fabric:mc1.16.3-0.5.6"
 //  modRuntime "com.github.jellysquid3:sodium-fabric:mc1.16.3-0.1.0" // Abandoned compatibility for now.
 
-	// Externals (used to be manually copied in)
-	shadowCompile('graphics.scenery:jopenvr:1.0.5.3')
-	shadowCompile('org.joml:joml:1.9.25')
+	// OpenVR
+	jijApi("com.github.halotroop2288:MCOpenVR:v0.0.4")
 
 	// For logging and configuration
 	jijApi("io.github.cottonmc:Jankson-Fabric:2.0.1+j1.2.0")
@@ -69,16 +68,12 @@ dependencies {
 // Jar-In-Jar an API mod
 def jijApi(dep) {
 	dependencies.modApi(dep) {
-		exclude group: 'net.fabricmc.fabric-api'
-		exclude group: 'com.google.code.gson'
+		exclude module: 'fabric-api'
+		exclude module: 'gson'
 	}
 	dependencies.include dep
 }
 
-def shadowCompile(dep) {
-	dependencies.shadow(dep)
-	dependencies.compile(dep)
-}
 
 minecraft {
 	accessWidener "src/main/resources/vrcraft.aw"
